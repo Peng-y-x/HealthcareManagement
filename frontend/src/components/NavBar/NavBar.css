@@ -1,0 +1,39 @@
+.navbar {
+    width: 100%;
+    padding: 24px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0c9aad;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    color: #333;
+}
+
+.nav-links li {
+    cursor: pointer;
+}
+
+.nav-links .active {
+    color: #0c9aad;
+    border-bottom: 2px solid #0c9aad;
+    padding-bottom: 4px;
+}
+
+.appointment-btn {
+    background-color: #0c9aad;
+    color: white;
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}

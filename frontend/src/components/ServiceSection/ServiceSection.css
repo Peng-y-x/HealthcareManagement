@@ -1,0 +1,27 @@
+.services {
+  padding: 80px 60px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.services-left .services-title {
+  color: #777;
+  font-size: 20px;
+}
+
+.services-highlight {
+  font-size: 32px;
+  font-weight: bold;
+  color: #0c9aad;
+}
+
+.services-right {
+  max-width: 420px;
+  text-align: right;
+}
+
+.services-text {
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
