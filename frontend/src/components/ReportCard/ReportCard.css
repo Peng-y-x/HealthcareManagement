@@ -1,0 +1,111 @@
+.report-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.report-card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.report-date {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.report-id {
+  font-size: 14px;
+  color: #7f8c8d;
+  background: #ecf0f1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.report-content {
+  margin-bottom: 16px;
+}
+
+.doctor-info {
+  margin-bottom: 16px;
+}
+
+.doctor-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #34495e;
+  margin-bottom: 4px;
+}
+
+.specialty {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.vital-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.vital-icon {
+  font-size: 16px;
+}
+
+.vital-label {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.vital-value {
+  color: #495057;
+  font-weight: 600;
+}
+
+.report-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.download-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.download-btn:hover {
+  background-color: #218838;
+}

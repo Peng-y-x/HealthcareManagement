@@ -1,0 +1,86 @@
+.entity-table-container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.entity-table {
+  width: 100%;
+  min-width: 800px;
+}
+
+.table-header {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 8px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.entity-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.name-cell {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.blood-type {
+  font-weight: 600;
+  color: #e74c3c;
+}
+
+.department {
+  color: #3498db;
+  font-weight: 500;
+}
+
+.hourly-rate {
+  font-weight: 600;
+  color: #27ae60;
+}
+
+.action-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.action-button:hover {
+  background-color: #0056b3;
+}
+
+.no-data {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 40px 20px;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+  .entity-table-container {
+    overflow-x: auto;
+  }
+  
+  .table-header {
+    font-size: 11px;
+    padding: 8px 6px;
+  }
+  
+  .entity-table td {
+    font-size: 13px;
+    padding: 8px 6px;
+  }
+}

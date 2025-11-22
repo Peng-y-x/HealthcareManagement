@@ -1,0 +1,195 @@
+.data-filtering-container {
+  min-height: calc(100vh - 80px);
+  background: #f8f9fa;
+  padding: 24px;
+}
+
+.data-filtering {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-title {
+  color: #2c3e50;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.page-description {
+  color: #7f8c8d;
+  text-align: center;
+  margin-bottom: 32px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tabs-container {
+  margin-bottom: 24px;
+}
+
+.entity-tabs .mantine-Tabs-tab {
+  font-weight: 500;
+  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.2s ease;
+}
+
+.entity-tabs .mantine-Tabs-tab:hover {
+  background-color: #e9ecef;
+}
+
+.entity-tabs .mantine-Tabs-tab[data-active] {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.filter-section {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filter-input {
+  flex: 1;
+}
+
+.filter-input input {
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
+.search-button {
+  color: #007bff;
+  padding: 4px;
+}
+
+.search-button:hover {
+  background-color: #f8f9fa;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.apply-filter-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.apply-filter-btn:hover {
+  background-color: #0056b3;
+}
+
+.clear-filter-btn {
+  color: #6c757d;
+  border: 1px solid #6c757d;
+  padding: 10px 20px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.clear-filter-btn:hover {
+  background-color: #6c757d;
+  color: white;
+}
+
+.filter-status {
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
+
+.filter-status-text {
+  color: #0c5aa6;
+  font-size: 14px;
+  margin: 0;
+}
+
+.table-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.table-title {
+  color: #34495e;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3498db;
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .data-filtering-container {
+    padding: 16px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .page-description {
+    font-size: 1rem;
+  }
+
+  .filter-section {
+    padding: 16px;
+  }
+
+  .filter-buttons {
+    flex-direction: column;
+  }
+
+  .apply-filter-btn,
+  .clear-filter-btn {
+    width: 100%;
+  }
+
+  .table-section {
+    padding: 16px;
+    overflow-x: auto;
+  }
+
+  .entity-tabs .mantine-Tabs-tab {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .entity-tabs .mantine-Tabs-list {
+    flex-wrap: wrap;
+  }
+  
+  .entity-tabs .mantine-Tabs-tab {
+    flex: 1;
+    min-width: 120px;
+  }
+}

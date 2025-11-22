@@ -20,7 +20,7 @@ export default function About() {
                         secure, efficient data sharing — empowering better care through technology.
                     </p>
 
-                    <button ClassName="physician-btn">
+                    <button className="physician-btn">
                         Meet Our Physicians
                     </button>
                 </div>
