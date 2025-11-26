@@ -1,0 +1,72 @@
+.navbar {
+    width: 1200px;
+    padding: 24px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0c9aad;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    color: #333;
+}
+
+.nav-links li {
+    cursor: pointer;
+}
+
+.nav-links .active {
+    color: #0c9aad;
+    border-bottom: 2px solid #0c9aad;
+    padding-bottom: 4px;
+}
+
+.appointment-btn {
+    background-color: #0c9aad;
+    color: white;
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.appointment-btn:hover {
+    background-color: #0a8993;
+}
+
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info {
+    font-size: 0.9rem;
+    color: #555;
+    font-weight: 500;
+}
+
+.logout-btn {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #d32f2f;
+}

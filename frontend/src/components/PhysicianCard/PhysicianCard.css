@@ -1,0 +1,32 @@
+.physician-card {
+    width: 420px;
+    padding: 30px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.physician-name {
+    color:black;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.physician-info {
+    display: flex;
+    gap: 10px;
+}
+
+.book-btn {
+    flex: 1;
+    height: 42px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    background-color: #ddd;
+    color: black;
+}

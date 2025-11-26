@@ -1,0 +1,104 @@
+.health-reports-container {
+  min-height: calc(100vh - 80px);
+  background: #f8f9fa;
+  padding: 24px;
+}
+
+.health-reports {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-title {
+  color: #2c3e50;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.page-description {
+  color: #7f8c8d;
+  text-align: center;
+  margin-bottom: 32px;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.error-notification {
+  margin-bottom: 24px;
+}
+
+.reports-section {
+  margin-top: 32px;
+}
+
+.section-title {
+  color: #34495e;
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3498db;
+  display: inline-block;
+}
+
+.reports-container {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  min-height: 300px;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+}
+
+.loading-state .mantine-Text-root {
+  color: #6c757d;
+  font-size: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 12px;
+}
+
+.empty-description {
+  color: #9ca3af;
+  font-size: 16px;
+  line-height: 1.5;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .health-reports-container {
+    padding: 16px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .page-description {
+    font-size: 1rem;
+  }
+
+  .reports-container {
+    padding: 16px;
+  }
+}
