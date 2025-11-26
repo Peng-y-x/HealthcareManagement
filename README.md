@@ -204,5 +204,3 @@ For issues and questions:
 3. Check browser console and Flask logs
 
 ---
-
-**Built with ❤️ using Flask and React**
