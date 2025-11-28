@@ -1,64 +1,139 @@
-import { Title, TextInput, Button, Text } from "@mantine/core";
-import { useState } from "react";
-import EntityTable from "../../components/EntityTable/EntityTable";
-import "./Appointments.css"
+import { useEffect, useMemo, useState } from "react";
+import { Title, Table, Alert, Loader, Text, TextInput } from "@mantine/core";
+import { DateInput } from "@mantine/dates";
+import { IconAlertCircle } from "@tabler/icons-react";
+import "./Appointments.css";
 
 export default function Appointments() {
-    const [filterQuery, setFilterQuery] = useState('');
-    const [appliedFilter, setAppliedFilter] = useState('')
-    const tableHeader = ['CLINIC ID', 'PHYSICIAN ID', 'SCHEDULE ID', 'DATE JOINED', 'HOURLY RATE'];
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [searchText, setSearchText] = useState("");
+    const [searchDate, setSearchDate] = useState(null);
 
-    const handleFilterSubmit = (event) => {
-        event.preventDefault();
-        setAppliedFilter(filterQuery);
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            setLoading(true);
+            setError("");
+            try {
+                const response = await fetch("/api/appointments", {
+                    credentials: "include",
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    setError(data.error || "Failed to load appointments.");
+                    setAppointments([]);
+                    return;
+                }
+
+                setAppointments(data.data || []);
+            } catch (err) {
+                setError(err.message || "Network error while loading appointments.");
+                setAppointments([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAppointments();
+    }, []);
+
+    const formatDate = (value) => {
+        if (!value) return "-";
+        return new Date(value).toLocaleDateString();
     };
 
-    const handleClearFilter = () => {
-        setFilterQuery('');
-        setAppliedFilter('');
-    };
+    const formatTime = (value) => (value ? value.slice(0, 5) : "-");
+
+    const filteredAppointments = useMemo(() => {
+        const text = searchText.trim().toLowerCase();
+        const dateStr = searchDate
+            ? new Date(searchDate).toISOString().split("T")[0]
+            : "";
+
+        return appointments.filter((appt) => {
+            const clinicMatch = appt.clinic_name?.toLowerCase().includes(text) || false;
+            const physicianMatch = appt.physician_name?.toLowerCase().includes(text) || false;
+            const textOk = text ? (clinicMatch || physicianMatch) : true;
+
+            const apptDate = appt.AppointmentDate
+                ? new Date(appt.AppointmentDate).toISOString().split("T")[0]
+                : "";
+            const dateOk = dateStr ? apptDate === dateStr : true;
+
+            return textOk && dateOk;
+        });
+    }, [appointments, searchText, searchDate]);
 
     return (
         <div className="appointments-page">
             <Title className="page-title"> Appointments </Title>
-            <div className="filter-section">
-                <form className="filter-form" onSubmit={handleFilterSubmit}>
-                    <TextInput
-                        placeholder="Filter by: Physician, Tom or Clinic, cl"
-                        label="Filter Query"
-                        description="Enter criteria as 'Attribute, Value' (e.g., 'Name, Tom') and press Enter or click search to filter results." 
-                        value={filterQuery}
-                        onChange={(event) => setFilterQuery(event.currentTarget.value)}
-                        className="filter-input"
-                    />
-                    <div className="filter-buttons">
-                        <Button type="submit" className="apply-buttons">
-                            Apply Filter
-                        </Button>
-                        <Button className="clear-button" onClick={handleClearFilter}>
-                            Clear Filter
-                        </Button>
+            {error && (
+                <Alert
+                    icon={<IconAlertCircle size={16} />}
+                    color="red"
+                    variant="light"
+                    mb="md"
+                >
+                    {error}
+                </Alert>
+            )}
+            
+
+            {loading ? (
+                <div className="appointments-loading">
+                    <Loader size="lg" />
+                    <Text c="dimmed" mt="sm">Loading your appointments...</Text>
+                </div>
+            ) : (
+                <div className="table-section">
+                    <div className="table-filter">
+                        <TextInput
+                            label="Search by physician or clinic"
+                            placeholder="e.g., Dr. Amy or Downtown Health"
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.currentTarget.value)}
+                        />
+                        <DateInput
+                            label="Filter by date"
+                            placeholder="Pick a date"
+                            value={searchDate}
+                            onChange={setSearchDate}
+                            clearable
+                        />
                     </div>
-                </form>
-            </div>
-
-            <div className="filter-status">
-                <Text className="filter-status-text">
-                    {appliedFilter ? (
-                        <>🔍 <strong>Active Filter:</strong> {appliedFilter} </>
-                    ) : (
-                        <>📊 <strong>Displaying all entries for:</strong> (No active filter)</>
-                    )}
-                </Text>
-            </div>
-
-            <div className="table-section">
-                <EntityTable 
-                    headers={tableHeader}
-                    activeTab={'workassignment'}
-                    appliedFilter={appliedFilter}
-                />
-            </div>
+                    <Table striped highlightOnHover withTableBorder withColumnBorders className="entity-table">
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>Clinic Name</Table.Th>
+                                <Table.Th>Physician Name</Table.Th>
+                                <Table.Th>Appointment Date</Table.Th>
+                                <Table.Th>Appointment Time</Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                            {filteredAppointments.length === 0 ? (
+                                <Table.Tr>
+                                    <Table.Td colSpan={4} className="no-data">
+                                        No appointments found for your criteria.
+                                    </Table.Td>
+                                </Table.Tr>
+                            ) : (
+                                filteredAppointments.map((appt) => (
+                                    <Table.Tr key={appt.AppointmentID}>
+                                        <Table.Td>{appt.clinic_name}</Table.Td>
+                                        <Table.Td>{appt.physician_name}</Table.Td>
+                                        <Table.Td>{formatDate(appt.AppointmentDate)}</Table.Td>
+                                        <Table.Td>{formatTime(appt.AppointmentTime)}</Table.Td>
+                                    </Table.Tr>
+                                ))
+                            )}
+                        </Table.Tbody>
+                    </Table>
+                </div>
+            )}
         </div>
     );
 }

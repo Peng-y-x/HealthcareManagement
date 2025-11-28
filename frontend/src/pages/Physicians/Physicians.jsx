@@ -8,7 +8,7 @@ export default function Physicians() {
     // Read URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const initialPage = parseInt(urlParams.get('page')) || 1;
-    const pageSize = parseInt(urlParams.get('page_size')) || 10;
+    const pageSize = parseInt(urlParams.get('page_size')) || 3;
 
     const [page, setPage] = useState(initialPage);
     const [totalPage, setTotalPage] = useState(1);

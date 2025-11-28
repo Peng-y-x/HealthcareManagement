@@ -16,7 +16,9 @@ export default function Register() {
         dob: "",
         address: "",
         blood_type: "",
-        department: ""
+        department: "",
+        clinic_name: "",
+        clinic_address: ""
     })
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -65,6 +67,8 @@ export default function Register() {
                     phone_number: form.phone_number,
                     password: form.password,
                     department: form.department,
+                    clinic_name: form.clinic_name,
+                    clinic_address: form.clinic_address
                 });
             }
 
@@ -202,16 +206,34 @@ export default function Register() {
                             </div>
                         </>
                     ) : (
-                        <div className="form-group">
-                            <label>Department</label>
-                            <input
-                                name="department"
-                                value={form.department}
-                                onChange={handleChange}
-                                placeholder="Department (e.g., Cardiology)"
-                                required
-                            />
-                        </div>
+                        <>
+                            <div className="form-group">
+                                <label>Department</label>
+                                <input
+                                    name="department"
+                                    value={form.department}
+                                    onChange={handleChange}
+                                    placeholder="Department (e.g., Cardiology)"
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Clinic Name</label>
+                                <input 
+                                    name="clinic_name" 
+                                    value={form.clinic_name}
+                                    onChange={handleChange}
+                                    placeholder="clinic name"/>
+                            </div>
+                            <div className="form-group">
+                                <label>Clinic Address</label>
+                                <input
+                                    name="clinic_address"
+                                    value={form.clinic_address}
+                                    onChange={handleChange}
+                                    placeholder="clinic address"/>
+                            </div>
+                        </>
                     )}
 
                     {success && (

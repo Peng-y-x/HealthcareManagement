@@ -1,7 +1,7 @@
 DATABASE_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'abhishek',  
+    'password': '',  
     'database': 'HealthSystem',
     'cursorclass': 'DictCursor'
 }

@@ -119,6 +119,8 @@ export function AuthProvider({ children }) {
                     name: formData.name,
                     phone_number: formData.phone_number,
                     department: formData.department,
+                    clinic_name: formData.clinic_name,
+                    clinic_address: formData.clinic_address
                 }),
             });
 

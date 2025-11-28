@@ -150,7 +150,7 @@ def register_physician():
         return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
 
     # Validate required fields
-    required_fields = ['email', 'password', 'name', 'phone_number', 'department']
+    required_fields = ['email', 'password', 'name', 'phone_number', 'department', 'clinic_name', 'clinic_address']
     for field in required_fields:
         if field not in data:
             return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
@@ -164,6 +164,22 @@ def register_physician():
         return jsonify({'success': False, 'error': 'Email already registered'}), 400
 
     try:
+        # check if the clinic exists
+        clinic_row = execute_one(
+            "SELECT ClinicID FROM Clinic WHERE Name = %s AND Address= %s",
+            (data['clinic_name'], data['clinic_address'])
+        )
+        if clinic_row:
+            clinic_id = clinic_row['ClinicID']
+        else:
+            # clinic doesn't exist, create a new clinic
+            result = (execute_one('SELECT MAX(ClinicID) as max_id FROM Clinic'))
+            new_clinic_id = (result['max_id'] or 0) + 1
+            execute_update(
+                "INSERT INTO Clinic (ClinicID, Name, Address) VALUES (%s, %s, %s)",
+                (new_clinic_id, data['clinic_name'], data['clinic_address'])
+            )
+            clinic_id = new_clinic_id
         # Get max PhysicianID and increment
         result = execute_one("SELECT MAX(PhysicianID) as max_id FROM Physician")
         new_physician_id = (result['max_id'] or 0) + 1
@@ -180,6 +196,11 @@ def register_physician():
             data['department']
         ))
 
+        # add works at
+        execute_update(
+            "INSERT INTO WorksAt (PhysicianID, ClinicID) VALUES (%s, %s)",
+            (new_physician_id, clinic_id)
+        )
         # Create user account
         user = User.create_user(
             email=data['email'],

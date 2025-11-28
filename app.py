@@ -53,7 +53,7 @@ def get_patients():
 def get_physicians():
     try:
         page = request.args.get('page', 1, type=int)
-        page_size = request.args.get('page_size', 10, type=int)
+        page_size = request.args.get('page_size', 3, type=int)
 
         offset = (page - 1) * page_size
 
@@ -85,6 +85,38 @@ def get_physicians():
             'page_size': page_size,
             'total': total,
             'total_pages': total_pages
+        }), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/appointments', methods=['GET'])
+@login_required
+def get_appointments():
+    """Get appointments for the logged-in patient"""
+    try:
+        if current_user.user_type != 'patient':
+            return jsonify({'success': False, 'error': 'Patient access required'}), 403
+
+        query = """
+            SELECT
+                a.AppointmentID,
+                c.Name AS clinic_name,
+                p.Name AS physician_name,
+                a.AppointmentDate,
+                a.AppointmentTime
+            FROM Appointment a
+            JOIN Clinic c ON c.ClinicID = a.ClinicID
+            JOIN Physician p ON p.PhysicianID = a.PhysicianID
+            WHERE a.PatientID = %s
+            ORDER BY a.AppointmentDate DESC, a.AppointmentTime DESC
+        """
+        appointments = execute_query(query, (current_user.reference_id,))
+
+        return jsonify({
+            'success': True,
+            'data': appointments,
+            'count': len(appointments)
         }), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
