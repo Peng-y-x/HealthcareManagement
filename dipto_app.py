@@ -230,6 +230,8 @@ def filter():
 @app.route("/api/appointements", methods = ["POST"])
 def make_appointment():
     try:
+        if current_user.user_type != 'patient':
+            return jsonify({'success': False, 'error': 'Patient access required'}), 403
         data = request.json
         
         # Validate that data is not None
@@ -237,7 +239,7 @@ def make_appointment():
             return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
         
         # Validate required fields
-        required_fields = ['PatientID', 'ClinicID',  'PhysicianID', 'AppointmentDate', 'AppointementTime']
+        required_fields = ['ClinicID',  'PhysicianID', 'AppointmentDate', 'AppointementTime']
         for field in required_fields:
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
@@ -255,7 +257,7 @@ def make_appointment():
         #))
 
         call_procedure('sp_BookAppointment', (
-                data['PatientID'],
+                current_user.reference_id,
                 data['PhysicianID'],
                 data['ClinicID'],
                 data['AppointmentDate'],
@@ -264,6 +266,66 @@ def make_appointment():
         jsonify({'success': True}), 201
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route("/api/appointments", methods = ["POST"])
+def update_appointement():
+    try:
+        if current_user.user_type != 'patient':
+            return jsonify({'success': False, 'error': 'Patient access required'}), 403
+        data = request.json
+        
+        # Validate that data is not None
+        if not data:
+            return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
+        
+        # Validate required fields
+        required_fields = ['AppointmentID', 'ClinicID',  'PhysicianID', 'AppointmentDate', 'AppointementTime']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+
+        query = """
+            update Appointment set ClinicID = %s, PhysicianID = %s, AppointmentDate = %s, AppointmentTime = %s where AppointmentID = %s
+        """
+
+        execute_update(query, (
+                data['ClinicID'],
+                data['PhysicianID'],
+                data['AppointmentDate'],
+                data['AppointementTime'],
+                data['AppointmentID']
+            ))
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route("/api/appointments", methods = ["POST"])
+def delete_appointement():
+    try:
+        if current_user.user_type != 'patient':
+            return jsonify({'success': False, 'error': 'Patient access required'}), 403
+        data = request.json
+        
+        # Validate that data is not None
+        if not data:
+            return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
+        
+        # Validate required fields
+        required_fields = ['AppointmentID']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+        query = """
+            delete * from Appointment where AppointmentID = %s
+        """
+    
+        execute_update(query, (
+                data['AppointmentID']
+            ))
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
     
 # @app.route("/api/appointements", methods = ["GET"])
 # def get_appointement():
