@@ -61,6 +61,12 @@
   color: #27ae60;
 }
 
+.working-days {
+  color: #6c757d;
+  font-size: 12px;
+  max-width: 150px;
+}
+
 .action-button {
   background-color: #007bff;
   color: white;

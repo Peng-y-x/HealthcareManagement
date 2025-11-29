@@ -261,6 +261,7 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
               <Table.Td>{item.clinicId}</Table.Td>
               <Table.Td>{item.physicianId}</Table.Td>
               <Table.Td>{item.scheduleId}</Table.Td>
+              <Table.Td className="working-days">{item.workingDays}</Table.Td>
               <Table.Td>{item.dateJoined}</Table.Td>
               <Table.Td className="hourly-rate">{item.hourlyRate}</Table.Td>
             </Table.Tr>

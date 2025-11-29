@@ -945,7 +945,6 @@ def get_health_reports_data():
 @app.route('/api/data/workassignments', methods=['GET'])
 @login_required
 def get_work_assignments_data():
-    """Get all work assignments for data filtering"""
     try:
         if current_user.user_type != 'physician':
             return jsonify({'success': False, 'error': 'Physician access required'}), 403
@@ -953,13 +952,29 @@ def get_work_assignments_data():
         query = """
             SELECT wa.ClinicID as clinicId, wa.PhysicianID as physicianId,
                    wa.ScheduleID as scheduleId, wa.DateJoined as dateJoined,
-                   wa.HourlyRate as hourlyRate
+                   wa.HourlyRate as hourlyRate,
+                   s.Monday, s.Tuesday, s.Wednesday, s.Thursday, s.Friday, s.Saturday, s.Sunday
             FROM WorksAt wa
+            JOIN Schedule s ON wa.ScheduleID = s.ScheduleID
             ORDER BY wa.DateJoined DESC
         """
         assignments = execute_query(query)
         
-        # Format hourly rate as currency
+        for assignment in assignments:
+            working_days = []
+            if assignment.get('Monday'): working_days.append('Mon')
+            if assignment.get('Tuesday'): working_days.append('Tue') 
+            if assignment.get('Wednesday'): working_days.append('Wed')
+            if assignment.get('Thursday'): working_days.append('Thu')
+            if assignment.get('Friday'): working_days.append('Fri')
+            if assignment.get('Saturday'): working_days.append('Sat')
+            if assignment.get('Sunday'): working_days.append('Sun')
+            
+            assignment['workingDays'] = ', '.join(working_days)
+            
+            for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']:
+                assignment.pop(day, None)
+        
         for assignment in assignments:
             if assignment['hourlyRate']:
                 assignment['hourlyRate'] = f"${assignment['hourlyRate']}"
@@ -1026,6 +1041,103 @@ def get_health_report_for_download(report_id):
             report['prescription'] = None
         
         return jsonify({'success': True, 'data': report}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/schedule/create', methods=['POST'])
+@login_required
+def create_schedule():
+    try:
+        data = request.get_json()
+        days = data.get('days', [])
+        
+        if not days:
+            return jsonify({'success': False, 'error': 'At least one day must be selected'}), 400
+        
+        id_query = 'SELECT IFNULL(MAX(ScheduleID), 0) + 1 AS nextId FROM Schedule'
+        id_result = execute_query(id_query)
+        schedule_id = id_result[0]['nextId']
+        
+        schedule_data = {
+            'Monday': 'Monday' in days,
+            'Tuesday': 'Tuesday' in days,
+            'Wednesday': 'Wednesday' in days,
+            'Thursday': 'Thursday' in days,
+            'Friday': 'Friday' in days,
+            'Saturday': 'Saturday' in days,
+            'Sunday': 'Sunday' in days
+        }
+        
+        query = """
+            INSERT INTO Schedule (ScheduleID, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        
+        execute_update(query, (
+            schedule_id,
+            schedule_data['Monday'],
+            schedule_data['Tuesday'],
+            schedule_data['Wednesday'],
+            schedule_data['Thursday'],
+            schedule_data['Friday'],
+            schedule_data['Saturday'],
+            schedule_data['Sunday']
+        ))
+        
+        return jsonify({'success': True, 'scheduleId': schedule_id}), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/workassignment/create', methods=['POST'])
+@login_required
+def create_work_assignment():
+    try:
+        data = request.get_json()
+        
+        required_fields = ['physicianId', 'clinicId', 'scheduleId', 'dateJoined', 'hourlyRate']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+        
+        query = """
+            INSERT INTO WorksAt (ClinicID, PhysicianID, ScheduleID, DateJoined, HourlyRate)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        
+        execute_update(query, (
+            data['clinicId'],
+            data['physicianId'],
+            data['scheduleId'],
+            data['dateJoined'],
+            data['hourlyRate']
+        ))
+        
+        return jsonify({'success': True, 'message': 'Work assignment created successfully'}), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/workassignment/check', methods=['GET'])
+@login_required
+def check_work_assignment():
+    try:
+        physician_id = request.args.get('physicianId')
+        clinic_id = request.args.get('clinicId')
+        
+        if not physician_id or not clinic_id:
+            return jsonify({'success': False, 'error': 'Missing physician or clinic ID'}), 400
+        
+        query = "SELECT COUNT(*) as count FROM WorksAt WHERE PhysicianID = %s AND ClinicID = %s"
+        result = execute_query(query, (physician_id, clinic_id))
+        
+        exists = result[0]['count'] > 0 if result else False
+        
+        return jsonify({'success': True, 'exists': exists}), 200
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

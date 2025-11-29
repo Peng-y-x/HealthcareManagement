@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TextInput, Button, Box, Title, Text, Switch, Group } from '@mantine/core';
-import { IconSearch } from '@tabler/icons-react';
+import { IconSearch, IconPlus } from '@tabler/icons-react';
 import { useSearchParams } from 'react-router-dom';
 import EntityTable from '../../components/EntityTable/EntityTable';
+import WorkAssignmentModal from '../../components/WorkAssignmentModal/WorkAssignmentModal';
 import "./DataFiltering.css";
 
 export default function DataFiltering() {
@@ -12,6 +13,8 @@ export default function DataFiltering() {
     const [filterQuery, setFilterQuery] = useState('');
     const [appliedFilter, setAppliedFilter] = useState('');
     const [showPrescriptions, setShowPrescriptions] = useState(false);
+    const [workAssignmentModalOpen, setWorkAssignmentModalOpen] = useState(false);
+    const [tableKey, setTableKey] = useState(0);
 
     useEffect(() => {
         const table = searchParams.get('table');
@@ -69,7 +72,7 @@ export default function DataFiltering() {
             case 'physician':
                 return ['#', 'NAME', 'EMAIL', 'PHONE NUMBER', 'DEPARTMENT', 'Actions'];
             case 'workassignment':
-                return ['CLINIC ID', 'PHYSICIAN ID', 'SCHEDULE ID', 'DATE JOINED', 'HOURLY RATE'];
+                return ['CLINIC ID', 'PHYSICIAN ID', 'SCHEDULE ID', 'WORKING DAYS', 'DATE JOINED', 'HOURLY RATE'];
             case 'clinic':
                 return ['#', 'NAME', 'ADDRESS'];
             default:
@@ -162,6 +165,17 @@ export default function DataFiltering() {
                     </Group>
                 )}
 
+                {activeTab === 'workassignment' && (
+                    <Group mb="md" justify="flex-end">
+                        <Button 
+                            leftSection={<IconPlus size={16} />}
+                            onClick={() => setWorkAssignmentModalOpen(true)}
+                        >
+                            Create Work Assignment
+                        </Button>
+                    </Group>
+                )}
+
                 <div className="table-section">
                     <Title order={2} className="table-title">
                         {activeTab === 'patient' && '👥 Patient Records'}
@@ -172,6 +186,7 @@ export default function DataFiltering() {
                     </Title>
                     
                     <EntityTable 
+                        key={tableKey}
                         headers={getTableHeaders(activeTab)} 
                         activeTab={activeTab} 
                         appliedFilter={appliedFilter}
@@ -179,6 +194,15 @@ export default function DataFiltering() {
                     />
                 </div>
             </div>
+
+            <WorkAssignmentModal
+                opened={workAssignmentModalOpen}
+                onClose={() => setWorkAssignmentModalOpen(false)}
+                onSuccess={() => {
+                    setTableKey(prev => prev + 1);
+                    setWorkAssignmentModalOpen(false);
+                }}
+            />
         </Box>
     );
 }
