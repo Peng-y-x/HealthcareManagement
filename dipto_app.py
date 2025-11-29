@@ -264,6 +264,62 @@ def make_appointment():
         jsonify({'success': True}), 201
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route("/api/appointments", methods = ["POST"])
+def update_appointement():
+    try:
+        data = request.json
+        
+        # Validate that data is not None
+        if not data:
+            return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
+        
+        # Validate required fields
+        required_fields = ['AppointmentID', 'ClinicID',  'PhysicianID', 'AppointmentDate', 'AppointementTime']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+
+        query = """
+            update Appointment set ClinicID = %s, PhysicianID = %s, AppointmentDate = %s, AppointmentTime = %s where AppointmentID = %s
+        """
+
+        execute_update(query, (
+                data['ClinicID'],
+                data['PhysicianID'],
+                data['AppointmentDate'],
+                data['AppointementTime'],
+                data['AppointmentID']
+            ))
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route("/api/appointments", methods = ["POST"])
+def delete_appointement():
+    try:
+        data = request.json
+        
+        # Validate that data is not None
+        if not data:
+            return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
+        
+        # Validate required fields
+        required_fields = ['AppointmentID']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+        query = """
+            delete * from Appointment where AppointmentID = %s
+        """
+    
+        execute_update(query, (
+                data['AppointmentID']
+            ))
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
     
 # @app.route("/api/appointements", methods = ["GET"])
 # def get_appointement():
