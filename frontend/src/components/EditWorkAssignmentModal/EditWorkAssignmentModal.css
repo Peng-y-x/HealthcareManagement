@@ -1,0 +1,15 @@
+.edit-work-assignment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edit-work-assignment-form .mantine-MultiSelect-root,
+.edit-work-assignment-form .mantine-NumberInput-root,
+.edit-work-assignment-form .mantine-TextInput-root {
+  width: 100%;
+}
+
+.edit-work-assignment-form .mantine-Alert-root {
+  margin-bottom: 16px;
+}

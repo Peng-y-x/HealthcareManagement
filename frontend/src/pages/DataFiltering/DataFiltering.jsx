@@ -72,7 +72,7 @@ export default function DataFiltering() {
             case 'physician':
                 return ['#', 'NAME', 'EMAIL', 'PHONE NUMBER', 'DEPARTMENT', 'Actions'];
             case 'workassignment':
-                return ['CLINIC ID', 'PHYSICIAN ID', 'SCHEDULE ID', 'WORKING DAYS', 'DATE JOINED', 'HOURLY RATE'];
+                return ['CLINIC ID', 'PHYSICIAN ID', 'SCHEDULE ID', 'WORKING DAYS', 'DATE JOINED', 'HOURLY RATE', 'Actions'];
             case 'clinic':
                 return ['#', 'NAME', 'ADDRESS'];
             default:
@@ -118,6 +118,17 @@ export default function DataFiltering() {
                     </Tabs>
                 </div>
 
+                {activeTab === 'workassignment' && (
+                    <Group mb="md" justify="flex-end">
+                        <Button 
+                            leftSection={<IconPlus size={16} />}
+                            onClick={() => setWorkAssignmentModalOpen(true)}
+                        >
+                            Create Work Assignment
+                        </Button>
+                    </Group>
+                )}
+
                 <div className="filter-section">
                     <form onSubmit={handleFilterSubmit} className="filter-form">
                         <TextInput
@@ -162,17 +173,6 @@ export default function DataFiltering() {
                             checked={showPrescriptions}
                             onChange={(event) => setShowPrescriptions(event.currentTarget.checked)}
                         />
-                    </Group>
-                )}
-
-                {activeTab === 'workassignment' && (
-                    <Group mb="md" justify="flex-end">
-                        <Button 
-                            leftSection={<IconPlus size={16} />}
-                            onClick={() => setWorkAssignmentModalOpen(true)}
-                        >
-                            Create Work Assignment
-                        </Button>
                     </Group>
                 )}
 

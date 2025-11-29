@@ -91,6 +91,14 @@
   justify-content: center;
 }
 
+.delete-button[data-action-icon] {
+  background-color: #dc3545 !important;
+}
+
+.delete-button[data-action-icon]:hover {
+  background-color: #c82333 !important;
+}
+
 .no-data {
   text-align: center;
   color: #6c757d;

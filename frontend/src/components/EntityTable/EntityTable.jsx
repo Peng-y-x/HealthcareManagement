@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Loader, Text, Group, ActionIcon } from '@mantine/core';
-import { IconDownload } from '@tabler/icons-react';
+import { Table, Button, Loader, Text, Group, ActionIcon, Modal } from '@mantine/core';
+import { IconDownload, IconEdit, IconTrash } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { generateHealthReportPDF } from '../../utils/pdfGenerator';
+import EditWorkAssignmentModal from '../EditWorkAssignmentModal/EditWorkAssignmentModal';
 import "./EntityTable.css";
 
 export default function EntityTable({ headers, activeTab, appliedFilter, showPrescriptions }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedWorkAssignment, setSelectedWorkAssignment] = useState(null);
+  const [workAssignmentToDelete, setWorkAssignmentToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -168,6 +174,72 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
     
     return null;
   };
+
+  const renderWorkAssignmentActions = (item) => {
+    return (
+      <Group gap="xs">
+        <ActionIcon
+          size="sm"
+          variant="filled"
+          color="blue"
+          onClick={() => handleEditWorkAssignment(item)}
+          title="Edit Work Assignment"
+          className="action-button"
+          data-action-icon="true"
+        >
+          <IconEdit size={16} />
+        </ActionIcon>
+        <ActionIcon
+          size="sm"
+          variant="filled"
+          color="red"
+          onClick={() => handleDeleteWorkAssignment(item)}
+          title="Delete Work Assignment"
+          className="action-button delete-button"
+          data-action-icon="true"
+        >
+          <IconTrash size={16} />
+        </ActionIcon>
+      </Group>
+    );
+  };
+
+  const handleEditWorkAssignment = (item) => {
+    setSelectedWorkAssignment(item);
+    setEditModalOpen(true);
+  };
+
+  const handleDeleteWorkAssignment = (item) => {
+    setWorkAssignmentToDelete(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!workAssignmentToDelete) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/workassignment/delete?physicianId=${workAssignmentToDelete.physicianId}&clinicId=${workAssignmentToDelete.clinicId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        fetchData();
+        setDeleteModalOpen(false);
+        setWorkAssignmentToDelete(null);
+      } else {
+        setError(result.error || 'Failed to delete work assignment');
+      }
+    } catch (error) {
+      console.error('Error deleting work assignment:', error);
+      setError('Failed to delete work assignment. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
   const renderTableRows = () => {
     if (loading) {
       return (
@@ -264,6 +336,7 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
               <Table.Td className="working-days">{item.workingDays}</Table.Td>
               <Table.Td>{item.dateJoined}</Table.Td>
               <Table.Td className="hourly-rate">{item.hourlyRate}</Table.Td>
+              <Table.Td>{renderWorkAssignmentActions(item)}</Table.Td>
             </Table.Tr>
           );
         
@@ -298,6 +371,39 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
         </Table.Tbody>
         </Table>
       </div>
+
+      <EditWorkAssignmentModal
+        opened={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onSuccess={() => {
+          setEditModalOpen(false);
+          fetchData();
+        }}
+        workAssignment={selectedWorkAssignment}
+      />
+
+      <Modal
+        opened={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Delete Work Assignment"
+        centered
+      >
+        <Text mb="lg">
+          Are you sure you want to delete the work assignment for Physician {workAssignmentToDelete?.physicianId} at Clinic {workAssignmentToDelete?.clinicId}?
+        </Text>
+        <Text size="sm" c="dimmed" mb="lg">
+          This will permanently remove both the work assignment and its associated schedule.
+        </Text>
+        
+        <Group justify="flex-end">
+          <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+            Keep Assignment
+          </Button>
+          <Button color="red" onClick={handleDeleteConfirm} loading={deleting}>
+            Delete Assignment
+          </Button>
+        </Group>
+      </Modal>
     </div>
   );
 }

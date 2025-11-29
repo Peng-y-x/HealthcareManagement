@@ -978,6 +978,8 @@ def get_work_assignments_data():
         for assignment in assignments:
             if assignment['hourlyRate']:
                 assignment['hourlyRate'] = f"${assignment['hourlyRate']}"
+            if assignment['dateJoined']:
+                assignment['dateJoined'] = assignment['dateJoined'].strftime('%a, %d %b %Y')
         
         return jsonify({'success': True, 'data': assignments}), 200
     except Exception as e:
@@ -1138,6 +1140,107 @@ def check_work_assignment():
         exists = result[0]['count'] > 0 if result else False
         
         return jsonify({'success': True, 'exists': exists}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/workassignment/delete', methods=['DELETE'])
+@login_required
+def delete_work_assignment():
+    try:
+        physician_id = request.args.get('physicianId')
+        clinic_id = request.args.get('clinicId')
+        
+        if not physician_id or not clinic_id:
+            return jsonify({'success': False, 'error': 'Missing physician or clinic ID'}), 400
+        
+        schedule_query = "SELECT ScheduleID FROM WorksAt WHERE PhysicianID = %s AND ClinicID = %s"
+        schedule_result = execute_query(schedule_query, (physician_id, clinic_id))
+        
+        if schedule_result:
+            schedule_id = schedule_result[0]['ScheduleID']
+            
+            work_query = "DELETE FROM WorksAt WHERE PhysicianID = %s AND ClinicID = %s"
+            execute_update(work_query, (physician_id, clinic_id))
+            
+            schedule_delete_query = "DELETE FROM Schedule WHERE ScheduleID = %s"
+            execute_update(schedule_delete_query, (schedule_id,))
+        else:
+            return jsonify({'success': False, 'error': 'Work assignment not found'}), 404
+        
+        return jsonify({'success': True, 'message': 'Work assignment and schedule deleted successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/workassignment/update', methods=['PUT'])
+@login_required
+def update_work_assignment():
+    try:
+        physician_id = request.args.get('physicianId')
+        clinic_id = request.args.get('clinicId')
+        data = request.get_json()
+        
+        if not physician_id or not clinic_id:
+            return jsonify({'success': False, 'error': 'Missing physician or clinic ID'}), 400
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
+        
+        schedule_query = "SELECT ScheduleID FROM WorksAt WHERE PhysicianID = %s AND ClinicID = %s"
+        schedule_result = execute_query(schedule_query, (physician_id, clinic_id))
+        
+        if not schedule_result:
+            return jsonify({'success': False, 'error': 'Work assignment not found'}), 404
+        
+        schedule_id = schedule_result[0]['ScheduleID']
+        
+        if 'days' in data:
+            days = data['days']
+            schedule_data = {
+                'Monday': 'Monday' in days,
+                'Tuesday': 'Tuesday' in days,
+                'Wednesday': 'Wednesday' in days,
+                'Thursday': 'Thursday' in days,
+                'Friday': 'Friday' in days,
+                'Saturday': 'Saturday' in days,
+                'Sunday': 'Sunday' in days
+            }
+            
+            update_schedule_query = """
+                UPDATE Schedule 
+                SET Monday = %s, Tuesday = %s, Wednesday = %s, Thursday = %s, 
+                    Friday = %s, Saturday = %s, Sunday = %s
+                WHERE ScheduleID = %s
+            """
+            execute_update(update_schedule_query, (
+                schedule_data['Monday'], schedule_data['Tuesday'], schedule_data['Wednesday'],
+                schedule_data['Thursday'], schedule_data['Friday'], schedule_data['Saturday'],
+                schedule_data['Sunday'], schedule_id
+            ))
+        
+        update_fields = []
+        update_values = []
+        
+        if 'dateJoined' in data:
+            update_fields.append("DateJoined = %s")
+            update_values.append(data['dateJoined'])
+            
+        if 'hourlyRate' in data:
+            update_fields.append("HourlyRate = %s")
+            update_values.append(data['hourlyRate'])
+        
+        if update_fields:
+            update_values.extend([physician_id, clinic_id])
+            update_query = f"""
+                UPDATE WorksAt SET {', '.join(update_fields)} 
+                WHERE PhysicianID = %s AND ClinicID = %s
+            """
+            execute_update(update_query, tuple(update_values))
+        
+        return jsonify({'success': True, 'message': 'Work assignment updated successfully'}), 200
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
