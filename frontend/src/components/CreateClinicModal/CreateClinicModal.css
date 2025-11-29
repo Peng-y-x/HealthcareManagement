@@ -1,0 +1,13 @@
+.create-clinic-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.create-clinic-form .mantine-TextInput-root {
+  width: 100%;
+}
+
+.create-clinic-form .mantine-Alert-root {
+  margin-bottom: 16px;
+}

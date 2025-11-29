@@ -4,6 +4,7 @@ import { IconSearch, IconPlus } from '@tabler/icons-react';
 import { useSearchParams } from 'react-router-dom';
 import EntityTable from '../../components/EntityTable/EntityTable';
 import WorkAssignmentModal from '../../components/WorkAssignmentModal/WorkAssignmentModal';
+import CreateClinicModal from '../../components/CreateClinicModal/CreateClinicModal';
 import "./DataFiltering.css";
 
 export default function DataFiltering() {
@@ -14,6 +15,7 @@ export default function DataFiltering() {
     const [appliedFilter, setAppliedFilter] = useState('');
     const [showPrescriptions, setShowPrescriptions] = useState(false);
     const [workAssignmentModalOpen, setWorkAssignmentModalOpen] = useState(false);
+    const [createClinicModalOpen, setCreateClinicModalOpen] = useState(false);
     const [tableKey, setTableKey] = useState(0);
 
     useEffect(() => {
@@ -129,6 +131,17 @@ export default function DataFiltering() {
                     </Group>
                 )}
 
+                {activeTab === 'clinic' && (
+                    <Group mb="md" justify="flex-end">
+                        <Button 
+                            leftSection={<IconPlus size={16} />}
+                            onClick={() => setCreateClinicModalOpen(true)}
+                        >
+                            Create Clinic
+                        </Button>
+                    </Group>
+                )}
+
                 <div className="filter-section">
                     <form onSubmit={handleFilterSubmit} className="filter-form">
                         <TextInput
@@ -201,6 +214,15 @@ export default function DataFiltering() {
                 onSuccess={() => {
                     setTableKey(prev => prev + 1);
                     setWorkAssignmentModalOpen(false);
+                }}
+            />
+
+            <CreateClinicModal
+                opened={createClinicModalOpen}
+                onClose={() => setCreateClinicModalOpen(false)}
+                onSuccess={() => {
+                    setTableKey(prev => prev + 1);
+                    setCreateClinicModalOpen(false);
                 }}
             />
         </Box>

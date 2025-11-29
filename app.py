@@ -1246,6 +1246,42 @@ def update_work_assignment():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/clinic/create', methods=['POST'])
+@login_required
+def create_clinic():
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
+        
+        required_fields = ['name', 'address']
+        for field in required_fields:
+            if field not in data or not data[field].strip():
+                return jsonify({'success': False, 'error': f'Missing or empty field: {field}'}), 400
+        
+        check_query = "SELECT ClinicID FROM Clinic WHERE Name = %s AND Address = %s"
+        existing_clinic = execute_query(check_query, (data['name'].strip(), data['address'].strip()))
+        
+        if existing_clinic:
+            return jsonify({'success': False, 'error': 'Clinic with this name and address already exists'}), 400
+        
+        id_query = 'SELECT IFNULL(MAX(ClinicID), 0) + 1 AS nextId FROM Clinic'
+        id_result = execute_query(id_query)
+        clinic_id = id_result[0]['nextId']
+        
+        query = """
+            INSERT INTO Clinic (ClinicID, Name, Address)
+            VALUES (%s, %s, %s)
+        """
+        execute_update(query, (clinic_id, data['name'].strip(), data['address'].strip()))
+        
+        return jsonify({'success': True, 'message': 'Clinic created successfully', 'clinicId': clinic_id}), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # ==================== SERVE REACT APP ====================
 # Serve React App (for production)
 # This catch-all route should NOT match /api or /auth routes
