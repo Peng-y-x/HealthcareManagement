@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Loader, Text } from '@mantine/core';
+import { Table, Button, Loader, Text, Group, ActionIcon } from '@mantine/core';
+import { IconDownload } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import { generateHealthReportPDF } from '../../utils/pdfGenerator';
 import "./EntityTable.css";
 
-export default function EntityTable({ headers, activeTab, appliedFilter }) {
+export default function EntityTable({ headers, activeTab, appliedFilter, showPrescriptions }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -11,14 +13,19 @@ export default function EntityTable({ headers, activeTab, appliedFilter }) {
 
   useEffect(() => {
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, showPrescriptions]);
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const endpoint = `/api/data/${activeTab === 'healthreport' ? 'healthreports' : activeTab === 'workassignment' ? 'workassignments' : activeTab + 's'}`;
+      let endpoint = `/api/data/${activeTab === 'healthreport' ? 'healthreports' : activeTab === 'workassignment' ? 'workassignments' : activeTab + 's'}`;
+      
+      if (activeTab === 'healthreport' && showPrescriptions) {
+        endpoint += '?show_prescriptions=true';
+      }
+      
       const response = await fetch(endpoint, {
         credentials: 'include'
       });
@@ -103,6 +110,29 @@ export default function EntityTable({ headers, activeTab, appliedFilter }) {
     });
   };
 
+  const handleDownloadPDF = async (reportId) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/healthreports/${reportId}/download`, {
+        credentials: 'include'
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        await generateHealthReportPDF(result.data);
+      } else {
+        console.error('Failed to fetch report data:', result.error);
+        alert('Failed to generate PDF. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderActionButton = (entityId) => {
     if (activeTab === 'patient' || activeTab === 'physician') {
       return (
@@ -119,6 +149,23 @@ export default function EntityTable({ headers, activeTab, appliedFilter }) {
         </Button>
       );
     }
+    
+    if (activeTab === 'healthreport') {
+      return (
+        <ActionIcon
+          size="md"
+          variant="filled"
+          color="blue"
+          onClick={() => handleDownloadPDF(entityId)}
+          title="Download PDF Report"
+          className="action-button"
+          data-action-icon="true"
+        >
+          <IconDownload size={18} />
+        </ActionIcon>
+      );
+    }
+    
     return null;
   };
   const renderTableRows = () => {
@@ -180,9 +227,19 @@ export default function EntityTable({ headers, activeTab, appliedFilter }) {
               <Table.Td>{item.physicianId}</Table.Td>
               <Table.Td className="name-cell">{item.patient}</Table.Td>
               <Table.Td>{item.patientId}</Table.Td>
+              <Table.Td>{renderActionButton(item.id)}</Table.Td>
               <Table.Td>{item.weight}</Table.Td>
               <Table.Td>{item.height}</Table.Td>
-              <Table.Td>{renderActionButton(item.id)}</Table.Td>
+              {showPrescriptions && (
+                <>
+                  <Table.Td>{item.prescriptionId || 'N/A'}</Table.Td>
+                  <Table.Td>{item.dosage || 'N/A'}</Table.Td>
+                  <Table.Td>{item.frequency || 'N/A'}</Table.Td>
+                  <Table.Td>{item.startDate || 'N/A'}</Table.Td>
+                  <Table.Td>{item.endDate || 'N/A'}</Table.Td>
+                  <Table.Td>{item.instructions || 'N/A'}</Table.Td>
+                </>
+              )}
             </Table.Tr>
           );
         
@@ -226,7 +283,8 @@ export default function EntityTable({ headers, activeTab, appliedFilter }) {
 
   return (
     <div className="entity-table-container">
-      <Table striped highlightOnHover withTableBorder withColumnBorders className="entity-table">
+      <div className="table-scroll-wrapper">
+        <Table striped highlightOnHover withTableBorder withColumnBorders className={`entity-table ${activeTab === 'healthreport' && showPrescriptions ? 'with-prescriptions' : ''}`}>
         <Table.Thead>
           <Table.Tr>
             {headers.map((header) => (
@@ -237,7 +295,8 @@ export default function EntityTable({ headers, activeTab, appliedFilter }) {
         <Table.Tbody>
           {renderTableRows()}
         </Table.Tbody>
-      </Table>
+        </Table>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, TextInput, Button, Box, Title, Text } from '@mantine/core';
+import { Tabs, TextInput, Button, Box, Title, Text, Switch, Group } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { useSearchParams } from 'react-router-dom';
 import EntityTable from '../../components/EntityTable/EntityTable';
@@ -11,6 +11,7 @@ export default function DataFiltering() {
     const [activeTab, setActiveTab] = useState('patient');
     const [filterQuery, setFilterQuery] = useState('');
     const [appliedFilter, setAppliedFilter] = useState('');
+    const [showPrescriptions, setShowPrescriptions] = useState(false);
 
     useEffect(() => {
         const table = searchParams.get('table');
@@ -62,7 +63,9 @@ export default function DataFiltering() {
             case 'patient':
                 return ['#', 'NAME', 'EMAIL', 'DOB', 'BLOOD TYPE', 'PHONE NUMBER', 'ADDRESS', 'Actions'];
             case 'healthreport':
-                return ['#', 'REPORT DATE', 'PHYSICIAN', 'PHYSICIAN ID', 'PATIENT', 'PATIENT ID', 'WEIGHT', 'HEIGHT', 'Actions'];
+                const baseHeaders = ['#', 'REPORT DATE', 'PHYSICIAN', 'PHYSICIAN ID', 'PATIENT', 'PATIENT ID', 'Actions', 'WEIGHT', 'HEIGHT'];
+                const prescriptionHeaders = ['PRESCRIPTION ID', 'DOSAGE', 'FREQUENCY', 'START DATE', 'END DATE', 'INSTRUCTIONS'];
+                return showPrescriptions ? [...baseHeaders.slice(0, 7), ...prescriptionHeaders, ...baseHeaders.slice(7)] : baseHeaders;
             case 'physician':
                 return ['#', 'NAME', 'EMAIL', 'PHONE NUMBER', 'DEPARTMENT', 'Actions'];
             case 'workassignment':
@@ -149,6 +152,16 @@ export default function DataFiltering() {
                     </Text>
                 </div>
 
+                {activeTab === 'healthreport' && (
+                    <Group mb="md" justify="flex-end">
+                        <Switch
+                            label="Show Prescriptions"
+                            checked={showPrescriptions}
+                            onChange={(event) => setShowPrescriptions(event.currentTarget.checked)}
+                        />
+                    </Group>
+                )}
+
                 <div className="table-section">
                     <Title order={2} className="table-title">
                         {activeTab === 'patient' && '👥 Patient Records'}
@@ -162,6 +175,7 @@ export default function DataFiltering() {
                         headers={getTableHeaders(activeTab)} 
                         activeTab={activeTab} 
                         appliedFilter={appliedFilter}
+                        showPrescriptions={showPrescriptions}
                     />
                 </div>
             </div>

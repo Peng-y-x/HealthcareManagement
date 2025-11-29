@@ -5,9 +5,18 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+.table-scroll-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .entity-table {
   width: 100%;
   min-width: 800px;
+}
+
+.entity-table.with-prescriptions {
+  min-width: 1800px;
 }
 
 .table-header {
@@ -19,10 +28,17 @@
   letter-spacing: 0.5px;
   padding: 12px 8px;
   border-bottom: 2px solid #dee2e6;
+  white-space: nowrap;
 }
 
 .entity-table tbody tr:hover {
   background-color: #f8f9fa;
+}
+
+.entity-table td {
+  white-space: nowrap;
+  padding: 12px 8px;
+  vertical-align: middle;
 }
 
 .name-cell {
@@ -59,6 +75,14 @@
 
 .action-button:hover {
   background-color: #0056b3;
+}
+
+.action-button[data-action-icon] {
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .no-data {

@@ -907,16 +907,34 @@ def get_health_reports_data():
         if current_user.user_type != 'physician':
             return jsonify({'success': False, 'error': 'Physician access required'}), 403
         
-        query = """
-            SELECT hr.ReportID as id, hr.ReportDate as reportDate,
-                   p.Name as physician, pt.Name as patient,
-                   hr.PhysicianID as physicianId, hr.PatientID as patientId,
-                   hr.Weight as weight, hr.Height as height
-            FROM HealthReport hr
-            JOIN Physician p ON p.PhysicianID = hr.PhysicianID
-            JOIN Patient pt ON pt.PatientID = hr.PatientID
-            ORDER BY hr.ReportDate DESC
-        """
+        show_prescriptions = request.args.get('show_prescriptions', 'false').lower() == 'true'
+        
+        if show_prescriptions:
+            query = """
+                SELECT hr.ReportID as id, hr.ReportDate as reportDate,
+                       p.Name as physician, pt.Name as patient,
+                       hr.PhysicianID as physicianId, hr.PatientID as patientId,
+                       hr.Weight as weight, hr.Height as height,
+                       pr.PrescriptionID as prescriptionId, pr.Dosage as dosage,
+                       pr.Frequency as frequency, pr.StartDate as startDate,
+                       pr.EndDate as endDate, pr.Instructions as instructions
+                FROM HealthReport hr
+                JOIN Physician p ON p.PhysicianID = hr.PhysicianID
+                JOIN Patient pt ON pt.PatientID = hr.PatientID
+                LEFT JOIN Prescription pr ON pr.ReportID = hr.ReportID
+                ORDER BY hr.ReportDate DESC
+            """
+        else:
+            query = """
+                SELECT hr.ReportID as id, hr.ReportDate as reportDate,
+                       p.Name as physician, pt.Name as patient,
+                       hr.PhysicianID as physicianId, hr.PatientID as patientId,
+                       hr.Weight as weight, hr.Height as height
+                FROM HealthReport hr
+                JOIN Physician p ON p.PhysicianID = hr.PhysicianID
+                JOIN Patient pt ON pt.PatientID = hr.PatientID
+                ORDER BY hr.ReportDate DESC
+            """
         reports = execute_query(query)
         
         return jsonify({'success': True, 'data': reports}), 200
@@ -947,6 +965,68 @@ def get_work_assignments_data():
                 assignment['hourlyRate'] = f"${assignment['hourlyRate']}"
         
         return jsonify({'success': True, 'data': assignments}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/healthreports/<int:report_id>/download', methods=['GET'])
+@login_required
+def get_health_report_for_download(report_id):
+    """Get a single health report with prescription data for PDF download"""
+    try:
+        if current_user.user_type != 'physician':
+            return jsonify({'success': False, 'error': 'Physician access required'}), 403
+        
+        query = """
+            SELECT hr.ReportID, hr.ReportDate, hr.Weight, hr.Height,
+                   p.Name as PhysicianName, p.Department as PhysicianDepartment,
+                   pt.Name as PatientName, pt.DOB as PatientDOB, pt.BloodType,
+                   pt.PhoneNumber as PatientPhone, pt.Address as PatientAddress,
+                   pr.PrescriptionID, pr.Dosage, pr.Frequency, pr.StartDate,
+                   pr.EndDate, pr.Instructions
+            FROM HealthReport hr
+            JOIN Physician p ON p.PhysicianID = hr.PhysicianID
+            JOIN Patient pt ON pt.PatientID = hr.PatientID
+            LEFT JOIN Prescription pr ON pr.ReportID = hr.ReportID
+            WHERE hr.ReportID = %s
+        """
+        
+        result = execute_query(query, (report_id,))
+        
+        if not result:
+            return jsonify({'success': False, 'error': 'Health report not found'}), 404
+        
+        # Process the result to separate report and prescription data
+        report_data = result[0]
+        report = {
+            'reportId': report_data['ReportID'],
+            'reportDate': report_data['ReportDate'],
+            'weight': report_data['Weight'],
+            'height': report_data['Height'],
+            'physicianName': report_data['PhysicianName'],
+            'physicianDepartment': report_data['PhysicianDepartment'],
+            'patientName': report_data['PatientName'],
+            'patientDOB': report_data['PatientDOB'],
+            'patientBloodType': report_data['BloodType'],
+            'patientPhone': report_data['PatientPhone'],
+            'patientAddress': report_data['PatientAddress']
+        }
+        
+        # Add prescription data if available
+        if report_data['PrescriptionID']:
+            report['prescription'] = {
+                'prescriptionId': report_data['PrescriptionID'],
+                'dosage': report_data['Dosage'],
+                'frequency': report_data['Frequency'],
+                'startDate': report_data['StartDate'],
+                'endDate': report_data['EndDate'],
+                'instructions': report_data['Instructions']
+            }
+        else:
+            report['prescription'] = None
+        
+        return jsonify({'success': True, 'data': report}), 200
+        
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

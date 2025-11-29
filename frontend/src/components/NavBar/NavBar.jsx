@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import "./NavBar.css"
@@ -5,6 +6,29 @@ import "./NavBar.css"
 export default function NavBar() {
     const navigate = useNavigate()
     const { user, isAuthenticated, isPatient, isPhysician, logout } = useAuth()
+    const [activeDropdown, setActiveDropdown] = useState(null)
+    const navRef = useRef(null)
+
+    const toggleDropdown = (dropdownName) => {
+        setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName)
+    }
+
+    const closeDropdowns = () => {
+        setActiveDropdown(null)
+    }
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (navRef.current && !navRef.current.contains(event.target)) {
+                setActiveDropdown(null)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
 
     const handleLogout = async () => {
         await logout()
@@ -12,7 +36,7 @@ export default function NavBar() {
     }
 
     return (
-        <nav className="navbar">
+        <nav className="navbar" ref={navRef}>
             <div className="logo">
                 LIFE PATH
             </div>
@@ -27,16 +51,41 @@ export default function NavBar() {
                     </>
                 )}
 
-                <li><NavLink to="/physicians" className={({ isActive }) => (isActive ? "Active" : "")}>Physicians</NavLink></li>
+                {/*<li><NavLink to="/physicians" className={({ isActive }) => (isActive ? "Active" : "")}>Physicians</NavLink></li>*/}
 
                 {isPatient && (
                     <>
-                        <li><NavLink to="/booking" className={({ isActive }) => (isActive ? "Active" : "")}>Make Appointment</NavLink></li>
-                        <li><NavLink to="/appointments" className={({ isActive }) => (isActive ? "Active" : "")}>Appointments</NavLink></li>
-                        <li><NavLink to="/reports" className={({ isActive }) => (isActive ? "Active" : "")}>Health Reports</NavLink></li>
-                        <li><NavLink to="/prescriptions" className={({ isActive }) => (isActive ? "Active" : "")}>Prescriptions</NavLink></li>
-                        <li><NavLink to="/billing" className={({ isActive }) => (isActive ? "Active" : "")}>Billing</NavLink></li>
-                        <li><NavLink to="/medical-history" className={({ isActive }) => (isActive ? "Active" : "")}>Medical History</NavLink></li>
+                        <li className="dropdown">
+                            <span 
+                                className={`dropdown-btn ${activeDropdown === 'appointments' ? 'active' : ''}`}
+                                onClick={() => toggleDropdown('appointments')}
+                            >
+                                Appointments ▼
+                            </span>
+                            {activeDropdown === 'appointments' && (
+                                <div className="dropdown-menu">
+                                    <NavLink to="/appointments" onClick={closeDropdowns}>View Appointments</NavLink>
+                                    <NavLink to="/booking" onClick={closeDropdowns}>Make Appointment</NavLink>
+                                </div>
+                            )}
+                        </li>
+
+                        <li className="dropdown">
+                            <span 
+                                className={`dropdown-btn ${activeDropdown === 'medical' ? 'active' : ''}`}
+                                onClick={() => toggleDropdown('medical')}
+                            >
+                                Medical Records ▼
+                            </span>
+                            {activeDropdown === 'medical' && (
+                                <div className="dropdown-menu">
+                                    <NavLink to="/reports" onClick={closeDropdowns}>Health Reports</NavLink>
+                                    <NavLink to="/prescriptions" onClick={closeDropdowns}>Prescriptions</NavLink>
+                                    <NavLink to="/billing" onClick={closeDropdowns}>Billing</NavLink>
+                                    <NavLink to="/medical-history" onClick={closeDropdowns}>Medical History</NavLink>
+                                </div>
+                            )}
+                        </li>
                     </>
                 )}
 
