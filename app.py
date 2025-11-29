@@ -937,6 +937,15 @@ def get_health_reports_data():
             """
         reports = execute_query(query)
         
+        for report in reports:
+            if report.get('reportDate'):
+                report['reportDate'] = report['reportDate'].strftime('%a, %d %b %Y')
+            if show_prescriptions:
+                if report.get('startDate'):
+                    report['startDate'] = report['startDate'].strftime('%a, %d %b %Y')
+                if report.get('endDate'):
+                    report['endDate'] = report['endDate'].strftime('%a, %d %b %Y')
+        
         return jsonify({'success': True, 'data': reports}), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

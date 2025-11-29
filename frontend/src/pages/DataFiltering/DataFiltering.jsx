@@ -66,15 +66,15 @@ export default function DataFiltering() {
     const getTableHeaders = (tab) => {
         switch (tab) {
             case 'patient':
-                return ['#', 'NAME', 'EMAIL', 'DOB', 'BLOOD TYPE', 'PHONE NUMBER', 'ADDRESS', 'Actions'];
+                return ['#', 'NAME', 'EMAIL', 'DOB', 'BLOOD TYPE', 'PHONE NUMBER', 'ADDRESS', 'ACTIONS'];
             case 'healthreport':
-                const baseHeaders = ['#', 'REPORT DATE', 'PHYSICIAN', 'PHYSICIAN ID', 'PATIENT', 'PATIENT ID', 'Actions', 'WEIGHT', 'HEIGHT'];
+                const baseHeaders = ['#', 'REPORT DATE', 'PHYSICIAN', 'PHYSICIAN ID', 'PATIENT', 'PATIENT ID', 'ACTIONS', 'WEIGHT', 'HEIGHT'];
                 const prescriptionHeaders = ['PRESCRIPTION ID', 'DOSAGE', 'FREQUENCY', 'START DATE', 'END DATE', 'INSTRUCTIONS'];
-                return showPrescriptions ? [...baseHeaders.slice(0, 7), ...prescriptionHeaders, ...baseHeaders.slice(7)] : baseHeaders;
+                return showPrescriptions ? [...baseHeaders.slice(0, 9), ...prescriptionHeaders] : baseHeaders;
             case 'physician':
-                return ['#', 'NAME', 'EMAIL', 'PHONE NUMBER', 'DEPARTMENT', 'Actions'];
+                return ['#', 'NAME', 'EMAIL', 'PHONE NUMBER', 'DEPARTMENT', 'ACTIONS'];
             case 'workassignment':
-                return ['CLINIC ID', 'PHYSICIAN ID', 'SCHEDULE ID', 'WORKING DAYS', 'DATE JOINED', 'HOURLY RATE', 'Actions'];
+                return ['CLINIC ID', 'PHYSICIAN ID', 'SCHEDULE ID', 'WORKING DAYS', 'DATE JOINED', 'HOURLY RATE', 'ACTIONS'];
             case 'clinic':
                 return ['#', 'NAME', 'ADDRESS'];
             default:
