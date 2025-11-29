@@ -10,13 +10,17 @@ import HealthReports from "../pages/HealthReports/HealthReports"
 import DataFiltering from "../pages/DataFiltering/DataFiltering"
 import Physicians from "../pages/Physicians/Physicians"
 import Appointments from "../pages/Appointments/Appointments"
+import Billing from "../pages/Billing/Billing"
+import Prescriptions from "../pages/Prescriptions/Prescriptions"
+import MedicalHistory from "../pages/MedicalHistory/MedicalHistory"
 
 export default function AppRouter (){
     return (
         <BrowserRouter>
             <AuthProvider>
                 <NavBar />
-                <Routes>
+                <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+                    <Routes>
                     <Route path="/" element={<Home/>}/>
                     <Route path="/login" element={<Login/>}/>
                     <Route path="/register" element={<Register/>}/>
@@ -48,6 +52,30 @@ export default function AppRouter (){
                         }
                     />
                     <Route
+                        path="/billing"
+                        element={
+                            <ProtectedRoute requirePatient>
+                                <Billing/>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/prescriptions"
+                        element={
+                            <ProtectedRoute requirePatient>
+                                <Prescriptions/>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/medical-history"
+                        element={
+                            <ProtectedRoute requirePatient>
+                                <MedicalHistory/>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
                         path="/admin"
                         element={
                             <ProtectedRoute requirePhysician>
@@ -55,7 +83,8 @@ export default function AppRouter (){
                             </ProtectedRoute>
                         }
                     />
-                </Routes>
+                    </Routes>
+                </main>
             </AuthProvider>
         </BrowserRouter>
     );

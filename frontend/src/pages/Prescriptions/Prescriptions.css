@@ -1,0 +1,59 @@
+.prescriptions-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-title {
+  color: var(--mantine-color-green-7);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.page-description {
+  color: var(--mantine-color-gray-6);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.error-notification {
+  margin-bottom: 1rem;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem;
+}
+
+.prescriptions-section {
+  margin-top: 2rem;
+}
+
+.section-title {
+  color: var(--mantine-color-gray-8);
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: var(--mantine-color-gray-0);
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+.empty-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--mantine-color-gray-7);
+  margin-bottom: 0.5rem;
+}
+
+.empty-description {
+  color: var(--mantine-color-gray-5);
+}

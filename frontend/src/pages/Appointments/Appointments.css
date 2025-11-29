@@ -1,64 +1,111 @@
-.appointments-page {
+.appointments-container {
   min-height: calc(100vh - 80px);
   background: #f8f9fa;
   padding: 24px;
 }
 
+.appointments {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .page-title {
   color: #2c3e50;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   text-align: center;
-  font-size: 2.4rem;
+  font-size: 2.5rem;
   font-weight: 700;
 }
 
-.table-section {
-  max-width: 1200px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 10px;
-  padding: 24px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  overflow-x: auto;
-}
-
-.entity-table {
-  width: 100%;
-  min-width: 720px;
-}
-
-.table-filter {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.no-data {
+.page-description {
+  color: #7f8c8d;
   text-align: center;
-  color: #6c757d;
-  font-style: italic;
-  padding: 40px 20px;
+  margin-bottom: 32px;
+  font-size: 1.1rem;
+  line-height: 1.5;
 }
 
-.appointments-loading {
+.error-notification {
+  margin-bottom: 24px;
+}
+
+.filter-section {
+  margin-bottom: 32px;
+}
+
+.appointments-section {
+  margin-top: 32px;
+}
+
+.section-title {
+  color: #34495e;
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3498db;
+  display: inline-block;
+}
+
+.appointments-content {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 0;
-  gap: 8px;
+  padding: 60px 20px;
+  gap: 16px;
+}
+
+.loading-state .mantine-Text-root {
+  color: #6c757d;
+  font-size: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 12px;
+}
+
+.empty-description {
+  color: #9ca3af;
+  font-size: 16px;
+  line-height: 1.5;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 @media (max-width: 768px) {
-  .appointments-page {
+  .appointments-container {
     padding: 16px;
   }
 
   .page-title {
     font-size: 2rem;
   }
-  .table-section {
+
+  .page-description {
+    font-size: 1rem;
+  }
+
+  .appointments-content {
     padding: 16px;
   }
 }

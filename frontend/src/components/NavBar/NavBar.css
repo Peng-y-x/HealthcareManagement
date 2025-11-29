@@ -1,9 +1,12 @@
 .navbar {
-    width: 1200px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 24px 60px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-sizing: border-box;
 }
 
 .logo {
@@ -17,6 +20,8 @@
     list-style: none;
     gap: 20px;
     color: #333;
+    margin: 0;
+    padding: 0;
 }
 
 .nav-links li {

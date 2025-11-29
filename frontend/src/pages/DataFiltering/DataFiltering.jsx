@@ -1,34 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TextInput, Button, Box, Title, Text } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
+import { useSearchParams } from 'react-router-dom';
 import EntityTable from '../../components/EntityTable/EntityTable';
 import "./DataFiltering.css";
 
 export default function DataFiltering() {
-    // State to track the active Category Tab (e.g., 'patient', 'physician')
+    const [searchParams, setSearchParams] = useSearchParams();
+    
     const [activeTab, setActiveTab] = useState('patient');
-    // State to hold the filter input value (e.g., 'Name, Tom')
     const [filterQuery, setFilterQuery] = useState('');
-    // State to hold the applied filter for table display
     const [appliedFilter, setAppliedFilter] = useState('');
+
+    useEffect(() => {
+        const table = searchParams.get('table');
+        const filter = searchParams.get('filter');
+        
+        if (table) {
+            setActiveTab(table);
+        }
+        
+        if (filter) {
+            const decodedFilter = decodeURIComponent(filter);
+            setFilterQuery(decodedFilter);
+            setAppliedFilter(decodedFilter);
+        }
+    }, [searchParams]);
+
+    const updateURL = (newTable, newFilter) => {
+        const params = new URLSearchParams();
+        if (newTable) {
+            params.set('table', newTable);
+        }
+        if (newFilter) {
+            params.set('filter', newFilter);
+        }
+        setSearchParams(params);
+    };
 
     const handleFilterSubmit = (event) => {
         event.preventDefault();
         setAppliedFilter(filterQuery);
+        updateURL(activeTab, filterQuery);
     };
 
     const handleClearFilter = () => {
         setFilterQuery('');
         setAppliedFilter('');
+        updateURL(activeTab, '');
     };
 
-    // --- Dynamically determine table headers based on the active tab ---
+    const handleTabChange = (newTab) => {
+        setActiveTab(newTab);
+        setFilterQuery('');
+        setAppliedFilter('');
+        updateURL(newTab, '');
+    };
+
     const getTableHeaders = (tab) => {
         switch (tab) {
             case 'patient':
                 return ['#', 'NAME', 'EMAIL', 'DOB', 'BLOOD TYPE', 'PHONE NUMBER', 'ADDRESS', 'Actions'];
             case 'healthreport':
-                return ['#', 'REPORT DATE', 'PHYSICIAN', 'PATIENT', 'WEIGHT', 'HEIGHT', 'Actions'];
+                return ['#', 'REPORT DATE', 'PHYSICIAN', 'PHYSICIAN ID', 'PATIENT', 'PATIENT ID', 'WEIGHT', 'HEIGHT', 'Actions'];
             case 'physician':
                 return ['#', 'NAME', 'EMAIL', 'PHONE NUMBER', 'DEPARTMENT', 'Actions'];
             case 'workassignment':
@@ -43,13 +77,13 @@ export default function DataFiltering() {
     const getFilterPlaceholder = (tab) => {
         switch (tab) {
             case 'patient':
-                return 'Filter by: Name, Tom or Email, example@email.com';
+                return 'Filter by: name, Tom; email, gmail OR name, Smith';
             case 'physician':
-                return 'Filter by: Name, Dr. Smith or Department, Cardiology';
+                return 'Filter by: name, Dr. Smith; department, Cardiology OR department, Neuro';
             case 'healthreport':
-                return 'Filter by: Patient, Tom or Physician, Dr. Smith';
+                return 'Filter by: patient, Tom H; physician, Dr. G OR patientId, 123 OR physicianId, 456';
             case 'clinic':
-                return 'Filter by: Name, Downtown or Address, Medical Plaza';
+                return 'Filter by: name, Downtown; address, Medical OR name, Center';
             case 'workassignment':
                 return 'Filter by: any field value';
             default:
@@ -66,9 +100,8 @@ export default function DataFiltering() {
                     Search and filter healthcare data across different entity types. Use the tabs to switch between data categories and apply filters to find specific records.
                 </Text>
 
-                {/* --- Category Tabs --- */}
                 <div className="tabs-container">
-                    <Tabs value={activeTab} onChange={setActiveTab} className="entity-tabs">
+                    <Tabs value={activeTab} onChange={handleTabChange} className="entity-tabs">
                         <Tabs.List>
                             <Tabs.Tab value="patient">👥 Patients</Tabs.Tab>
                             <Tabs.Tab value="healthreport">📋 Health Reports</Tabs.Tab>
@@ -79,13 +112,11 @@ export default function DataFiltering() {
                     </Tabs>
                 </div>
 
-                {/* --- Filter Bar --- */}
                 <div className="filter-section">
                     <form onSubmit={handleFilterSubmit} className="filter-form">
                         <TextInput
                             placeholder={getFilterPlaceholder(activeTab)}
                             label="🔍 Search & Filter"
-                            description="Enter criteria as 'Attribute, Value' (e.g., 'Name, Tom') and press Enter or click search to filter results."
                             value={filterQuery}
                             onChange={(event) => setFilterQuery(event.currentTarget.value)}
                             rightSection={
@@ -118,7 +149,6 @@ export default function DataFiltering() {
                     </Text>
                 </div>
 
-                {/* --- Table of Entities --- */}
                 <div className="table-section">
                     <Title order={2} className="table-title">
                         {activeTab === 'patient' && '👥 Patient Records'}

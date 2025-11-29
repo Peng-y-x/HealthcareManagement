@@ -32,8 +32,11 @@ export default function NavBar() {
                 {isPatient && (
                     <>
                         <li><NavLink to="/booking" className={({ isActive }) => (isActive ? "Active" : "")}>Make Appointment</NavLink></li>
-                        <li><NavLink to="/reports" className={({ isActive }) => (isActive ? "Active" : "")}>Health Reports</NavLink></li>
                         <li><NavLink to="/appointments" className={({ isActive }) => (isActive ? "Active" : "")}>Appointments</NavLink></li>
+                        <li><NavLink to="/reports" className={({ isActive }) => (isActive ? "Active" : "")}>Health Reports</NavLink></li>
+                        <li><NavLink to="/prescriptions" className={({ isActive }) => (isActive ? "Active" : "")}>Prescriptions</NavLink></li>
+                        <li><NavLink to="/billing" className={({ isActive }) => (isActive ? "Active" : "")}>Billing</NavLink></li>
+                        <li><NavLink to="/medical-history" className={({ isActive }) => (isActive ? "Active" : "")}>Medical History</NavLink></li>
                     </>
                 )}
 

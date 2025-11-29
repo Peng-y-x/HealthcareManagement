@@ -3,35 +3,52 @@ import { Box, Title, Text, Loader, Notification } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import DateFilter from '../../components/DateFilter/DateFilter';
 import ReportCard from '../../components/ReportCard/ReportCard';
-import { HEALTH_REPORTS } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 import "./HealthReports.css";
 
 export default function HealthReports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { user } = useAuth();
 
   const fetchReports = async (startDate, endDate) => {
+    if (!user?.reference_id) {
+      setError('Please log in to view your health reports.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      let filtered = HEALTH_REPORTS;
+      const response = await fetch(`/api/healthreports?patient_id=${user.reference_id}`, {
+        credentials: 'include'
+      });
       
-      if (startDate || endDate) {
-        filtered = HEALTH_REPORTS.filter((report) => {
-          const reportDate = new Date(report.date).getTime();
-          const start = startDate ? new Date(startDate).getTime() : 0;
-          const end = endDate ? new Date(endDate).setHours(23, 59, 59) : Infinity;
-          return reportDate >= start && reportDate <= end;
-        });
-      }
+      const data = await response.json();
 
-      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-      setReports(filtered);
-    } catch {
+      if (response.ok && data.success) {
+        let filtered = data.data || [];
+        
+        // Apply date filtering if dates are provided
+        if (startDate || endDate) {
+          filtered = filtered.filter((report) => {
+            const reportDate = new Date(report.ReportDate).getTime();
+            const start = startDate ? new Date(startDate).getTime() : 0;
+            const end = endDate ? new Date(endDate).setHours(23, 59, 59) : Infinity;
+            return reportDate >= start && reportDate <= end;
+          });
+        }
+
+        // Sort by date (newest first)
+        filtered.sort((a, b) => new Date(b.ReportDate) - new Date(a.ReportDate));
+        setReports(filtered);
+      } else {
+        setError(data.error || 'Failed to fetch health reports.');
+      }
+    } catch (err) {
+      console.error('Error fetching health reports:', err);
       setError('Failed to fetch health reports. Please try again.');
     } finally {
       setLoading(false);
