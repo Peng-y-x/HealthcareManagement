@@ -304,6 +304,40 @@ VALUES
 (9, 9, 9, '2023-09-01', 110),
 (10, 10, 10, '2023-10-01', 130);
 
+-- 12. User (Patient accounts - password is 'password123' hashed with bcrypt)
+INSERT INTO User (Email, PasswordHash, UserType, ReferenceID, IsActive)
+VALUES
+('alice.johnson@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 1, TRUE),
+('bob.smith@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 2, TRUE),
+('carol.lee@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 3, TRUE),
+('david.kim@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 4, TRUE),
+('emma.wilson@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 5, TRUE),
+('frank.brown@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 6, TRUE),
+('grace.liu@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 7, TRUE),
+('henry.adams@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 8, TRUE),
+('ivy.chen@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 9, TRUE),
+('jack.miller@email.com', '$2b$10$rKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOX', 'patient', 10, TRUE);
+
+-- 13. User (Physician accounts - password is 'doctor123' hashed with bcrypt)
+INSERT INTO User (Email, PasswordHash, UserType, ReferenceID, IsActive)
+VALUES
+('amy.carter@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 1, TRUE),
+('ben.young@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 2, TRUE),
+('chloe.davis@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 3, TRUE),
+('daniel.moore@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 4, TRUE),
+('ella.scott@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 5, TRUE),
+('felix.white@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 6, TRUE),
+('gina.torres@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 7, TRUE),
+('henry.hall@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 8, TRUE),
+('irene.king@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 9, TRUE),
+('james.lee@healthsystem.com', '$2b$10$aKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOA', 'physician', 10, TRUE);
+
+-- 14. User (Admin accounts - password is 'admin123' hashed with bcrypt)
+INSERT INTO User (Email, PasswordHash, UserType, ReferenceID, IsActive)
+VALUES
+('admin@healthsystem.com', '$2b$10$bKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOB', 'admin', NULL, TRUE),
+('sysadmin@healthsystem.com', '$2b$10$bKZrqJKhYvZvYvXKwZqZyOXKzKqZqZyOXKzKqZqZyOXKzKqZqZyOB', 'admin', NULL, TRUE);
+
 
 -- (1) Get patient's age based on DOB
 
