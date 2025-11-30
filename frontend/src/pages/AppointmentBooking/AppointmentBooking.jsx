@@ -84,7 +84,7 @@ function AppointmentBookingForm() {
 
   const fetchPhysicians = async () => {
     try {
-      const response = await fetch('/api/physicians', {
+      const response = await fetch('/api/physicians?page=1&page_size=1000', {
         credentials: 'include'
       });
       const data = await response.json();
