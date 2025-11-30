@@ -93,7 +93,10 @@ function AppointmentBookingForm() {
         const physicianData = data.data || [];
         setPhysicians(physicianData);
         
-        const uniqueDepts = [...new Set(physicianData.map(p => p.Department))].filter(Boolean);
+        const uniqueDepts = [...new Set(physicianData
+          .map(p => p.Department?.trim())
+          .filter(Boolean)
+        )].sort();
         setDepartments(uniqueDepts.map(dept => ({ value: dept, label: dept })));
         
         const worksAtMapping = physicianData.map(p => ({
@@ -309,6 +312,12 @@ function AppointmentBookingForm() {
                   placeholder="Choose a physician"
                   data={physicians
                     .filter(p => p.Department === form.values.department)
+                    .reduce((unique, p) => {
+                      if (!unique.some(item => item.PhysicianID === p.PhysicianID)) {
+                        unique.push(p);
+                      }
+                      return unique;
+                    }, [])
                     .map(p => ({ value: p.PhysicianID.toString(), label: p.Name }))
                   }
                   {...form.getInputProps('physicianId')}

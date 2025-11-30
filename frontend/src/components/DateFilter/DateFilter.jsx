@@ -8,8 +8,19 @@ export default function DateFilter({ onFilter }) {
   const [endDate, setEndDate] = useState(null);
 
   const handleFilter = () => {
-    const start = startDate ? startDate.toISOString().split('T')[0] : null;
-    const end = endDate ? endDate.toISOString().split('T')[0] : null;
+    let start = null;
+    let end = null;
+    
+    if (startDate) {
+      const startDateObj = new Date(startDate);
+      start = startDateObj.toISOString().split('T')[0];
+    }
+    
+    if (endDate) {
+      const endDateObj = new Date(endDate);
+      end = endDateObj.toISOString().split('T')[0];
+    }
+    
     onFilter(start, end);
   };
 

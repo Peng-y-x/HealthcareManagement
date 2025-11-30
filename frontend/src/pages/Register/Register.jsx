@@ -16,9 +16,7 @@ export default function Register() {
         dob: "",
         address: "",
         blood_type: "",
-        department: "",
-        clinic_name: "",
-        clinic_address: ""
+        department: ""
     })
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -66,9 +64,7 @@ export default function Register() {
                     email: form.email,
                     phone_number: form.phone_number,
                     password: form.password,
-                    department: form.department,
-                    clinic_name: form.clinic_name,
-                    clinic_address: form.clinic_address
+                    department: form.department
                 });
             }
 
@@ -216,22 +212,6 @@ export default function Register() {
                                     placeholder="Department (e.g., Cardiology)"
                                     required
                                 />
-                            </div>
-                            <div className="form-group">
-                                <label>Clinic Name</label>
-                                <input 
-                                    name="clinic_name" 
-                                    value={form.clinic_name}
-                                    onChange={handleChange}
-                                    placeholder="clinic name"/>
-                            </div>
-                            <div className="form-group">
-                                <label>Clinic Address</label>
-                                <input
-                                    name="clinic_address"
-                                    value={form.clinic_address}
-                                    onChange={handleChange}
-                                    placeholder="clinic address"/>
                             </div>
                         </>
                     )}

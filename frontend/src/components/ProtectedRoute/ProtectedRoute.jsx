@@ -1,8 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-export default function ProtectedRoute({ children, requirePatient, requirePhysician }) {
-    const { isAuthenticated, isPatient, isPhysician, loading } = useAuth();
+export default function ProtectedRoute({ children, requirePatient, requirePhysician, allowPatientOrPhysician }) {
+    const { isAuthenticated, isPatient, isPhysician, isAdmin, loading } = useAuth();
 
     if (loading) {
         return (
@@ -25,7 +25,11 @@ export default function ProtectedRoute({ children, requirePatient, requirePhysic
         return <Navigate to="/" replace />;
     }
 
-    if (requirePhysician && !isPhysician) {
+    if (requirePhysician && !isPhysician && !isAdmin) {
+        return <Navigate to="/" replace />;
+    }
+
+    if (allowPatientOrPhysician && !isPatient && !isPhysician) {
         return <Navigate to="/" replace />;
     }
 

@@ -118,9 +118,7 @@ export function AuthProvider({ children }) {
                     password: formData.password,
                     name: formData.name,
                     phone_number: formData.phone_number,
-                    department: formData.department,
-                    clinic_name: formData.clinic_name,
-                    clinic_address: formData.clinic_address
+                    department: formData.department
                 }),
             });
 
@@ -146,6 +144,7 @@ export function AuthProvider({ children }) {
         isAuthenticated: !!user,
         isPatient: user?.user_type === 'patient',
         isPhysician: user?.user_type === 'physician',
+        isAdmin: user?.user_type === 'admin',
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

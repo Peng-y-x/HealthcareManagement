@@ -3,7 +3,7 @@ from flask_login import LoginManager, login_required, current_user
 from flask_cors import CORS
 from db import init_app, execute_query, execute_one, execute_update, call_procedure
 from models import User
-from auth import auth_bp
+from auth import auth_bp, admin_required
 import os
 
 app = Flask(__name__, static_folder='frontend/dist', static_url_path='')
@@ -97,14 +97,43 @@ def setup_database():
         
         cursor.close()
         conn.close()
-        print("✅ Database setup completed successfully!")
+        print("Database setup completed successfully!")
         
     except Exception as e:
-        print(f"❌ Database setup failed: {e}")
+        print(f"Database setup failed: {e}")
         print("Please ensure MySQL is running and credentials are correct in config.py")
+
+def reset_database():
+    
+    import pymysql
+    from config import DATABASE_CONFIG
+
+    try:
+        conn = pymysql.connect(
+            host=DATABASE_CONFIG['host'],
+            user=DATABASE_CONFIG['user'],
+            password=DATABASE_CONFIG['password']
+        )
+        cursor = conn.cursor()
+        
+        db_name = DATABASE_CONFIG['database']
+
+        print(f"Dropping database '{db_name}'...")
+        cursor.execute(f"DROP DATABASE IF EXISTS {db_name}")
+        
+        cursor.close()
+        conn.close()
+        print(f"Database dropped successfully!")
+
+        setup_database()
+        
+    except Exception as e:
+        print(f"Database drop failed: {e}")
 
 # Setup database on startup #SJ
 #setup_database()
+#reset_database()
+#exit(1)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -183,26 +212,43 @@ def get_physicians():
 @app.route('/api/appointments', methods=['GET'])
 @login_required
 def get_appointments():
-    """Get appointments for the logged-in patient"""
+    """Get appointments for the logged-in user (patient or physician)"""
     try:
-        if current_user.user_type != 'patient':
-            return jsonify({'success': False, 'error': 'Patient access required'}), 403
+        if current_user.user_type not in ['patient', 'physician']:
+            return jsonify({'success': False, 'error': 'Patient or physician access required'}), 403
 
-        query = """
-            SELECT
-                a.AppointmentID,
-                c.Name AS clinic_name,
-                c.Address AS clinic_address,
-                p.Name AS physician_name,
-                a.AppointmentDate,
-                a.AppointmentTime
-            FROM Appointment a
-            JOIN Clinic c ON c.ClinicID = a.ClinicID
-            JOIN Physician p ON p.PhysicianID = a.PhysicianID
-            WHERE a.PatientID = %s
-            ORDER BY a.AppointmentDate DESC, a.AppointmentTime DESC
-        """
-        appointments = execute_query(query, (current_user.reference_id,))
+        if current_user.user_type == 'patient':
+            query = """
+                SELECT
+                    a.AppointmentID,
+                    c.Name AS clinic_name,
+                    c.Address AS clinic_address,
+                    p.Name AS physician_name,
+                    a.AppointmentDate,
+                    a.AppointmentTime
+                FROM Appointment a
+                JOIN Clinic c ON c.ClinicID = a.ClinicID
+                JOIN Physician p ON p.PhysicianID = a.PhysicianID
+                WHERE a.PatientID = %s
+                ORDER BY a.AppointmentDate DESC, a.AppointmentTime DESC
+            """
+            appointments = execute_query(query, (current_user.reference_id,))
+        else:  # physician
+            query = """
+                SELECT
+                    a.AppointmentID,
+                    c.Name AS clinic_name,
+                    c.Address AS clinic_address,
+                    pt.Name AS patient_name,
+                    a.AppointmentDate,
+                    a.AppointmentTime
+                FROM Appointment a
+                JOIN Clinic c ON c.ClinicID = a.ClinicID
+                JOIN Patient pt ON pt.PatientID = a.PatientID
+                WHERE a.PhysicianID = %s
+                ORDER BY a.AppointmentDate DESC, a.AppointmentTime DESC
+            """
+            appointments = execute_query(query, (current_user.reference_id,))
         
         for appointment in appointments:
             if 'AppointmentTime' in appointment and appointment['AppointmentTime'] is not None:
@@ -224,27 +270,46 @@ def get_appointments():
 @app.route('/api/appointments/<int:appointment_id>', methods=['DELETE'])
 @login_required
 def delete_appointment(appointment_id):
-    """Delete an appointment for the logged-in patient"""
+    """Delete an appointment for the logged-in patient or physician"""
     try:
-        if current_user.user_type != 'patient':
-            return jsonify({'success': False, 'error': 'Patient access required'}), 403
+        if current_user.user_type not in ['patient', 'physician']:
+            return jsonify({'success': False, 'error': 'Patient or physician access required'}), 403
 
-        # Verify the appointment belongs to the current user
-        verify_query = """
-            SELECT AppointmentID FROM Appointment 
-            WHERE AppointmentID = %s AND PatientID = %s
-        """
-        existing_appointment = execute_query(verify_query, (appointment_id, current_user.reference_id))
+        if current_user.user_type == 'patient':
+            # Verify the appointment belongs to the current patient
+            verify_query = """
+                SELECT AppointmentID FROM Appointment 
+                WHERE AppointmentID = %s AND PatientID = %s
+            """
+            existing_appointment = execute_query(verify_query, (appointment_id, current_user.reference_id))
+            
+            if not existing_appointment:
+                return jsonify({'success': False, 'error': 'Appointment not found or unauthorized'}), 404
+            
+            # Delete the appointment for patient
+            delete_query = """
+                DELETE FROM Appointment 
+                WHERE AppointmentID = %s AND PatientID = %s
+            """
+            execute_update(delete_query, (appointment_id, current_user.reference_id))
         
-        if not existing_appointment:
-            return jsonify({'success': False, 'error': 'Appointment not found or unauthorized'}), 404
-        
-        # Delete the appointment
-        delete_query = """
-            DELETE FROM Appointment 
-            WHERE AppointmentID = %s AND PatientID = %s
-        """
-        execute_update(delete_query, (appointment_id, current_user.reference_id))
+        else:  # physician
+            # Verify the appointment belongs to the current physician
+            verify_query = """
+                SELECT AppointmentID FROM Appointment 
+                WHERE AppointmentID = %s AND PhysicianID = %s
+            """
+            existing_appointment = execute_query(verify_query, (appointment_id, current_user.reference_id))
+            
+            if not existing_appointment:
+                return jsonify({'success': False, 'error': 'Appointment not found or unauthorized'}), 404
+            
+            # Delete the appointment for physician (no date restrictions)
+            delete_query = """
+                DELETE FROM Appointment 
+                WHERE AppointmentID = %s AND PhysicianID = %s
+            """
+            execute_update(delete_query, (appointment_id, current_user.reference_id))
         
         return jsonify({'success': True, 'message': 'Appointment cancelled successfully'}), 200
         
@@ -359,22 +424,146 @@ def make_appointment():
 
 @app.route("/api/healthreports", methods=["GET"])
 @login_required
-def get_healthreports_for_patient():
+def get_healthreports():
     try:
-        patient_id = request.args.get('patient_id')
+        if current_user.user_type == 'patient':
+            patient_id = request.args.get('patient_id')
+            
+            # Validate required parameter for patients
+            if not patient_id:
+                return jsonify({'success': False, 'error': 'Missing required parameter: patient_id'}), 400
+            
+            query = """
+                SELECT hr.ReportID, hr.ReportDate, hr.Weight, hr.Height, hr.PhysicianID, hr.PatientID,
+                       p.Name as PhysicianName, p.Department as PhysicianDepartment,
+                       pt.Name as PatientName
+                FROM HealthReport hr
+                JOIN Physician p ON p.PhysicianID = hr.PhysicianID
+                JOIN Patient pt ON pt.PatientID = hr.PatientID
+                WHERE hr.PatientID = %s
+                ORDER BY hr.ReportDate DESC
+            """
+            health_reports = execute_query(query, (patient_id,))
         
-        # Validate required parameter
-        if not patient_id:
-            return jsonify({'success': False, 'error': 'Missing required parameter: patient_id'}), 400
+        elif current_user.user_type == 'physician':
+            # Show all health reports created by this physician
+            query = """
+                SELECT hr.ReportID, hr.ReportDate, hr.Weight, hr.Height, hr.PhysicianID, hr.PatientID,
+                       p.Name as PhysicianName, p.Department as PhysicianDepartment,
+                       pt.Name as PatientName
+                FROM HealthReport hr
+                JOIN Physician p ON p.PhysicianID = hr.PhysicianID
+                JOIN Patient pt ON pt.PatientID = hr.PatientID
+                WHERE hr.PhysicianID = %s
+                ORDER BY hr.ReportDate DESC
+            """
+            health_reports = execute_query(query, (current_user.reference_id,))
         
-        query = """
-            SELECT * FROM HealthReport WHERE PatientID = %s
-        """
-
-        health_reports = execute_query(query, (patient_id,))
+        else:
+            return jsonify({'success': False, 'error': 'Patient or physician access required'}), 403
 
         return jsonify({'success': True, 'data': health_reports}), 200
     
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+
+@app.route("/api/physician/patients", methods=["GET"])
+@login_required
+def get_physician_patients():
+    """Get patients who have had appointments with this physician"""
+    try:
+        if current_user.user_type not in ['physician', 'admin']:
+            return jsonify({'success': False, 'error': 'Physician or admin access required'}), 403
+        
+        # Get distinct patients who have had appointments with this physician
+        query = """
+            SELECT DISTINCT pt.PatientID, pt.Name as PatientName
+            FROM Appointment a
+            JOIN Patient pt ON pt.PatientID = a.PatientID
+            WHERE a.PhysicianID = %s
+            ORDER BY pt.Name
+        """
+        
+        patients = execute_query(query, (current_user.reference_id,))
+        
+        return jsonify({'success': True, 'data': patients}), 200
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+
+@app.route("/api/healthreports", methods=["POST"])
+@login_required
+def create_health_report():
+    """Create a new health report with prescriptions"""
+    try:
+        if current_user.user_type not in ['physician', 'admin']:
+            return jsonify({'success': False, 'error': 'Physician or admin access required'}), 403
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['patientId', 'reportDate', 'weight', 'height']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+        
+        # Get next ReportID
+        id_query = 'SELECT IFNULL(MAX(ReportID), 0) + 1 AS nextId FROM HealthReport'
+        id_result = execute_query(id_query)
+        report_id = id_result[0]['nextId']
+        
+        # Create health report
+        health_report_query = """
+            INSERT INTO HealthReport (ReportID, ReportDate, Weight, Height, PhysicianID, PatientID)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        execute_update(health_report_query, (
+            report_id,
+            data['reportDate'],
+            data['weight'],
+            data['height'],
+            current_user.reference_id,
+            data['patientId']
+        ))
+        
+        # Create prescriptions if provided
+        if 'prescriptions' in data and data['prescriptions']:
+            for prescription in data['prescriptions']:
+                # Validate prescription dates
+                from datetime import datetime
+                start_date = datetime.strptime(prescription['startDate'], '%Y-%m-%d').date()
+                end_date = datetime.strptime(prescription['endDate'], '%Y-%m-%d').date()
+                
+                if end_date < start_date:
+                    return jsonify({'success': False, 'error': 'Prescription end date must be greater than or equal to start date'}), 400
+                
+                # Get next PrescriptionID
+                prescription_id_query = 'SELECT IFNULL(MAX(PrescriptionID), 0) + 1 AS nextId FROM Prescription'
+                prescription_id_result = execute_query(prescription_id_query)
+                prescription_id = prescription_id_result[0]['nextId']
+                
+                prescription_query = """
+                    INSERT INTO Prescription (PrescriptionID, ReportID, Dosage, Frequency, StartDate, EndDate, Instructions)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                execute_update(prescription_query, (
+                    prescription_id,
+                    report_id,
+                    prescription['dosage'],
+                    prescription['frequency'],
+                    prescription['startDate'],
+                    prescription['endDate'],
+                    prescription['instructions']
+                ))
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Health report created successfully',
+            'reportId': report_id
+        }), 201
+        
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
@@ -840,8 +1029,8 @@ def get_booked_timeslots():
 def get_patients_data():
     """Get all patients for data filtering"""
     try:
-        if current_user.user_type != 'physician':
-            return jsonify({'success': False, 'error': 'Physician access required'}), 403
+        if current_user.user_type not in ['physician', 'admin']:
+            return jsonify({'success': False, 'error': 'Physician or admin access required'}), 403
         
         query = """
             SELECT p.PatientID as id, p.Name as name, u.Email as email, p.DOB as dob, 
@@ -862,8 +1051,8 @@ def get_patients_data():
 def get_physicians_data():
     """Get all physicians for data filtering"""
     try:
-        if current_user.user_type != 'physician':
-            return jsonify({'success': False, 'error': 'Physician access required'}), 403
+        if current_user.user_type not in ['physician', 'admin']:
+            return jsonify({'success': False, 'error': 'Physician or admin access required'}), 403
         
         query = """
             SELECT p.PhysicianID as id, p.Name as name, u.Email as email, 
@@ -884,8 +1073,8 @@ def get_physicians_data():
 def get_clinics_data():
     """Get all clinics for data filtering"""
     try:
-        if current_user.user_type != 'physician':
-            return jsonify({'success': False, 'error': 'Physician access required'}), 403
+        if current_user.user_type not in ['physician', 'admin']:
+            return jsonify({'success': False, 'error': 'Physician or admin access required'}), 403
         
         query = """
             SELECT ClinicID as id, Name as name, Address as address
@@ -904,10 +1093,11 @@ def get_clinics_data():
 def get_health_reports_data():
     """Get all health reports for data filtering"""
     try:
-        if current_user.user_type != 'physician':
-            return jsonify({'success': False, 'error': 'Physician access required'}), 403
+        if current_user.user_type not in ['physician', 'admin']:
+            return jsonify({'success': False, 'error': 'Physician or admin access required'}), 403
         
         show_prescriptions = request.args.get('show_prescriptions', 'false').lower() == 'true'
+        include_prescription_ids = request.args.get('include_prescription_ids', 'false').lower() == 'true'
         
         if show_prescriptions:
             query = """
@@ -937,6 +1127,42 @@ def get_health_reports_data():
             """
         reports = execute_query(query)
         
+        # If including prescription IDs, aggregate them for each health report
+        if include_prescription_ids:
+            reports_dict = {}
+            for report in reports:
+                report_id = report['id']
+                if report_id not in reports_dict:
+                    reports_dict[report_id] = {
+                        'id': report['id'],
+                        'reportDate': report['reportDate'],
+                        'physician': report['physician'],
+                        'patient': report['patient'],
+                        'physicianId': report['physicianId'],
+                        'patientId': report['patientId'],
+                        'weight': report['weight'],
+                        'height': report['height'],
+                        'prescriptionIds': []
+                    }
+            
+            # Get prescription IDs for each health report
+            prescription_query = """
+                SELECT ReportID, PrescriptionID 
+                FROM Prescription 
+                WHERE ReportID IN ({})
+                ORDER BY PrescriptionID
+            """.format(','.join(['%s'] * len(reports_dict)))
+            
+            prescription_data = execute_query(prescription_query, list(reports_dict.keys()))
+            
+            # Group prescription IDs by report ID
+            for prescription in prescription_data:
+                report_id = prescription['ReportID']
+                if report_id in reports_dict:
+                    reports_dict[report_id]['prescriptionIds'].append(prescription['PrescriptionID'])
+            
+            reports = list(reports_dict.values())
+        
         for report in reports:
             if report.get('reportDate'):
                 report['reportDate'] = report['reportDate'].strftime('%a, %d %b %Y')
@@ -955,8 +1181,8 @@ def get_health_reports_data():
 @login_required
 def get_work_assignments_data():
     try:
-        if current_user.user_type != 'physician':
-            return jsonify({'success': False, 'error': 'Physician access required'}), 403
+        if current_user.user_type not in ['physician', 'admin']:
+            return jsonify({'success': False, 'error': 'Physician or admin access required'}), 403
         
         query = """
             SELECT wa.ClinicID as clinicId, wa.PhysicianID as physicianId,
@@ -995,16 +1221,45 @@ def get_work_assignments_data():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/data/prescriptions', methods=['GET'])
+@login_required
+def get_prescriptions_data():
+    """Get all prescriptions for data filtering"""
+    try:
+        if current_user.user_type not in ['physician', 'admin']:
+            return jsonify({'success': False, 'error': 'Physician or admin access required'}), 403
+        
+        query = """
+            SELECT PrescriptionID as id, ReportID as healthReportId,
+                   Dosage as dosage, Frequency as frequency,
+                   StartDate as startDate, EndDate as endDate,
+                   Instructions as instructions
+            FROM Prescription
+            ORDER BY PrescriptionID DESC
+        """
+        prescriptions = execute_query(query)
+        
+        for prescription in prescriptions:
+            if prescription.get('startDate'):
+                prescription['startDate'] = prescription['startDate'].strftime('%a, %d %b %Y')
+            if prescription.get('endDate'):
+                prescription['endDate'] = prescription['endDate'].strftime('%a, %d %b %Y')
+        
+        return jsonify({'success': True, 'data': prescriptions}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/healthreports/<int:report_id>/download', methods=['GET'])
 @login_required
 def get_health_report_for_download(report_id):
     """Get a single health report with prescription data for PDF download"""
     try:
-        if current_user.user_type != 'physician':
-            return jsonify({'success': False, 'error': 'Physician access required'}), 403
+        if current_user.user_type not in ['physician', 'admin']:
+            return jsonify({'success': False, 'error': 'Physician or admin access required'}), 403
         
         query = """
-            SELECT hr.ReportID, hr.ReportDate, hr.Weight, hr.Height,
+            SELECT hr.ReportID, hr.ReportDate, hr.Weight, hr.Height, hr.PhysicianID, hr.PatientID,
                    p.Name as PhysicianName, p.Department as PhysicianDepartment,
                    pt.Name as PatientName, pt.DOB as PatientDOB, pt.BloodType,
                    pt.PhoneNumber as PatientPhone, pt.Address as PatientAddress,
@@ -1029,6 +1284,8 @@ def get_health_report_for_download(report_id):
             'reportDate': report_data['ReportDate'],
             'weight': report_data['Weight'],
             'height': report_data['Height'],
+            'physicianId': report_data['PhysicianID'],
+            'patientId': report_data['PatientID'],
             'physicianName': report_data['PhysicianName'],
             'physicianDepartment': report_data['PhysicianDepartment'],
             'patientName': report_data['PatientName'],
@@ -1038,10 +1295,80 @@ def get_health_report_for_download(report_id):
             'patientAddress': report_data['PatientAddress']
         }
         
-        # Add prescription data if available
+        # Collect all prescriptions for this report
+        prescriptions = []
+        for row in result:
+            if row['PrescriptionID']:
+                prescriptions.append({
+                    'prescriptionId': row['PrescriptionID'],
+                    'dosage': row['Dosage'],
+                    'frequency': row['Frequency'],
+                    'startDate': row['StartDate'],
+                    'endDate': row['EndDate'],
+                    'instructions': row['Instructions']
+                })
+        
+        # Add prescription data - use first prescription for backward compatibility
+        if prescriptions:
+            report['prescription'] = prescriptions[0]
+            report['prescriptions'] = prescriptions  # Add all prescriptions
+        else:
+            report['prescription'] = None
+            report['prescriptions'] = []
+        
+        return jsonify({'success': True, 'data': report}), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/patient/healthreports/<int:report_id>/download', methods=['GET'])
+@login_required
+def get_health_report_for_patient_download(report_id):
+    """Get a single health report for patient PDF download"""
+    try:
+        if current_user.user_type != 'patient':
+            return jsonify({'success': False, 'error': 'Patient access required'}), 403
+        
+        query = """
+            SELECT hr.ReportID, hr.ReportDate, hr.Weight, hr.Height,
+                   p.Name as PhysicianName, p.Department as PhysicianDepartment,
+                   pt.Name as PatientName, pt.DOB as PatientDOB, pt.BloodType,
+                   pt.PhoneNumber as PatientPhone, pt.Address as PatientAddress,
+                   pr.PrescriptionID, pr.Dosage, pr.Frequency, pr.StartDate,
+                   pr.EndDate, pr.Instructions
+            FROM HealthReport hr
+            JOIN Physician p ON p.PhysicianID = hr.PhysicianID
+            JOIN Patient pt ON pt.PatientID = hr.PatientID
+            LEFT JOIN Prescription pr ON pr.ReportID = hr.ReportID
+            WHERE hr.ReportID = %s AND hr.PatientID = %s
+        """
+        
+        result = execute_query(query, (report_id, current_user.reference_id))
+        
+        if not result:
+            return jsonify({'success': False, 'error': 'Health report not found or access denied'}), 404
+        
+        # Process the result to separate report and prescription data
+        report_data = result[0]
+        report = {
+            'reportId': '',  # Remove ID for patient view
+            'reportDate': report_data['ReportDate'],
+            'weight': report_data['Weight'],
+            'height': report_data['Height'],
+            'physicianName': report_data['PhysicianName'],
+            'physicianDepartment': report_data['PhysicianDepartment'],
+            'patientName': report_data['PatientName'],
+            'patientDOB': report_data['PatientDOB'],
+            'patientBloodType': report_data['BloodType'],
+            'patientPhone': report_data['PatientPhone'],
+            'patientAddress': report_data['PatientAddress']
+        }
+        
+        # Add prescription data if available (remove prescription ID for patient view)
         if report_data['PrescriptionID']:
             report['prescription'] = {
-                'prescriptionId': report_data['PrescriptionID'],
+                'prescriptionId': '',  # Remove ID for patient view
                 'dosage': report_data['Dosage'],
                 'frequency': report_data['Frequency'],
                 'startDate': report_data['StartDate'],
@@ -1105,6 +1432,7 @@ def create_schedule():
 
 @app.route('/api/workassignment/create', methods=['POST'])
 @login_required
+@admin_required
 def create_work_assignment():
     try:
         data = request.get_json()
@@ -1156,6 +1484,7 @@ def check_work_assignment():
 
 @app.route('/api/workassignment/delete', methods=['DELETE'])
 @login_required
+@admin_required
 def delete_work_assignment():
     try:
         physician_id = request.args.get('physicianId')
@@ -1186,6 +1515,7 @@ def delete_work_assignment():
 
 @app.route('/api/workassignment/update', methods=['PUT'])
 @login_required
+@admin_required
 def update_work_assignment():
     try:
         physician_id = request.args.get('physicianId')
@@ -1257,6 +1587,7 @@ def update_work_assignment():
 
 @app.route('/api/clinic/create', methods=['POST'])
 @login_required
+@admin_required
 def create_clinic():
     try:
         data = request.get_json()

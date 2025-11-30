@@ -90,6 +90,7 @@
 .report-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
   padding-top: 12px;
   border-top: 1px solid #f0f0f0;
 }
@@ -108,4 +109,71 @@
 
 .download-btn:hover {
   background-color: #218838;
+}
+
+.prescription-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  animation: slideDown 0.3s ease-out;
+}
+
+.prescription-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #34495e;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prescriptions-container {
+  max-height: 120px; /* Height for exactly one prescription + some padding */
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #f8f9fa;
+}
+
+.prescription-item {
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.prescription-item:last-child {
+  border-bottom: none;
+}
+
+.prescription-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prescription-details Text:first-child {
+  color: #2c3e50;
+}
+
+.prescription-details Text:nth-child(2) {
+  color: #6c757d;
+}
+
+.prescription-details Text:last-child {
+  color: #495057;
+  background: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid #007bff;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 200px;
+  }
 }

@@ -13,6 +13,7 @@ import Appointments from "../pages/Appointments/Appointments"
 import Billing from "../pages/Billing/Billing"
 import Prescriptions from "../pages/Prescriptions/Prescriptions"
 import MedicalHistory from "../pages/MedicalHistory/MedicalHistory"
+import CreateHealthReport from "../pages/CreateHealthReport/CreateHealthReport"
 
 export default function AppRouter (){
     return (
@@ -38,7 +39,7 @@ export default function AppRouter (){
                     <Route
                         path="/reports"
                         element={
-                            <ProtectedRoute requirePatient>
+                            <ProtectedRoute allowPatientOrPhysician>
                                 <HealthReports/>
                             </ProtectedRoute>
                         }
@@ -46,7 +47,7 @@ export default function AppRouter (){
                     <Route
                         path="/appointments"
                         element={
-                            <ProtectedRoute requirePatient>
+                            <ProtectedRoute allowPatientOrPhysician>
                                 <Appointments/>
                             </ProtectedRoute>
                         }
@@ -80,6 +81,14 @@ export default function AppRouter (){
                         element={
                             <ProtectedRoute requirePhysician>
                                 <DataFiltering/>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/create-health-report"
+                        element={
+                            <ProtectedRoute requirePhysician>
+                                <CreateHealthReport/>
                             </ProtectedRoute>
                         }
                     />

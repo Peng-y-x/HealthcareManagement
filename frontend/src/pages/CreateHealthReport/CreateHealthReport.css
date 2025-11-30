@@ -1,0 +1,78 @@
+.create-health-report-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.create-health-report {
+    width: 100%;
+}
+
+.page-title {
+    color: #2c3e50;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.page-description {
+    color: #7f8c8d;
+    margin-bottom: 30px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.stepper {
+    margin-bottom: 30px;
+}
+
+.step-card {
+    margin-top: 20px;
+    min-height: 400px;
+}
+
+.prescription-form {
+    background-color: #f8f9fa;
+}
+
+.prescriptions-list {
+    background-color: #f1f3f4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .create-health-report-container {
+        padding: 10px;
+    }
+    
+    .step-card {
+        min-height: auto;
+        padding: 15px;
+    }
+}
+
+/* Table styling */
+.prescriptions-list .mantine-Table-table {
+    background: white;
+}
+
+.prescription-form .mantine-Card-root {
+    border: 1px solid #dee2e6;
+}
+
+/* Button styling */
+.mantine-Button-root {
+    border-radius: 6px;
+}
+
+/* Form field spacing */
+.step-card .mantine-Group-root {
+    gap: 16px;
+}
+
+.step-card .mantine-TextInput-root,
+.step-card .mantine-NumberInput-root,
+.step-card .mantine-DateInput-root,
+.step-card .mantine-Select-root,
+.step-card .mantine-Textarea-root {
+    margin-bottom: 12px;
+}

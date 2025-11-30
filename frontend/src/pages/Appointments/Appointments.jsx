@@ -14,7 +14,7 @@ export default function Appointments() {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [appointmentToCancel, setAppointmentToCancel] = useState(null);
     const [cancelling, setCancelling] = useState(false);
-    const { user } = useAuth();
+    const { user, isPhysician } = useAuth();
 
     useEffect(() => {
         const fetchAppointments = async () => {
@@ -66,8 +66,10 @@ export default function Appointments() {
     };
 
     const handleCancelClick = (appointment) => {
-        if (isPastOrTodayAppointment(appointment.AppointmentDate)) {
-            return; // Don't allow cancelling today's or past appointments
+        // Only restrict patients from cancelling past/today appointments
+        // Physicians can delete any appointment (including past ones)
+        if (!isPhysician && isPastOrTodayAppointment(appointment.AppointmentDate)) {
+            return; // Don't allow patients to cancel today's or past appointments
         }
         setAppointmentToCancel(appointment);
         setCancelModalOpen(true);
@@ -108,7 +110,8 @@ export default function Appointments() {
         return appointments.filter((appt) => {
             const clinicMatch = appt.clinic_name?.toLowerCase().includes(text) || false;
             const physicianMatch = appt.physician_name?.toLowerCase().includes(text) || false;
-            const textOk = text ? (clinicMatch || physicianMatch) : true;
+            const patientMatch = appt.patient_name?.toLowerCase().includes(text) || false;
+            const textOk = text ? (clinicMatch || physicianMatch || patientMatch) : true;
 
             const apptDate = appt.AppointmentDate
                 ? new Date(appt.AppointmentDate).toISOString().split("T")[0]
@@ -122,10 +125,15 @@ export default function Appointments() {
     return (
         <Box className="appointments-container">
             <div className="appointments">
-                <Title order={1} className="page-title">📅 My Appointments</Title>
+                <Title order={1} className="page-title">
+                    {isPhysician ? "📅 Patient Appointments" : "📅 My Appointments"}
+                </Title>
                 
                 <Text className="page-description">
-                    View and manage your scheduled medical appointments.
+                    {isPhysician 
+                        ? "View and manage appointments for your patients." 
+                        : "View and manage your scheduled medical appointments."
+                    }
                 </Text>
 
                 {error && (
@@ -143,8 +151,8 @@ export default function Appointments() {
                 <div className="filter-section">
                     <Group grow>
                         <TextInput
-                            label="Search by physician or clinic"
-                            placeholder="e.g., Dr. Amy or Downtown Health"
+                            label={`Search by ${isPhysician ? 'patient' : 'physician'} or clinic`}
+                            placeholder={isPhysician ? "e.g., John Smith or Downtown Health" : "e.g., Dr. Amy or Downtown Health"}
                             value={searchText}
                             onChange={(e) => setSearchText(e.currentTarget.value)}
                         />
@@ -176,7 +184,9 @@ export default function Appointments() {
                                         <div style={{ flex: 1 }}>
                                             <Group mb="xs">
                                                 <IconUser size={16} />
-                                                <Text fw={500}>{appt.physician_name}</Text>
+                                                <Text fw={500}>
+                                                    {isPhysician ? `Patient: ${appt.patient_name}` : `Physician: ${appt.physician_name}`}
+                                                </Text>
                                             </Group>
                                             
                                             <Group mb="xs">
@@ -199,7 +209,7 @@ export default function Appointments() {
                                             </Group>
                                         </div>
                                         
-                                        {!isPastOrTodayAppointment(appt.AppointmentDate) ? (
+                                        {(!isPastOrTodayAppointment(appt.AppointmentDate) || isPhysician) ? (
                                             <ActionIcon 
                                                 color="red" 
                                                 variant="light" 
@@ -234,8 +244,11 @@ export default function Appointments() {
                 title="Cancel Appointment"
             >
                 <Text mb="lg">
-                    Are you sure you want to cancel your appointment with {appointmentToCancel?.physician_name} 
-                    on {formatDate(appointmentToCancel?.AppointmentDate)} at {formatTime(appointmentToCancel?.AppointmentTime)}?
+                    Are you sure you want to cancel {isPhysician ? "this" : "your"} appointment 
+                    {isPhysician 
+                        ? ` for ${appointmentToCancel?.patient_name}` 
+                        : ` with ${appointmentToCancel?.physician_name}`
+                    } on {formatDate(appointmentToCancel?.AppointmentDate)} at {formatTime(appointmentToCancel?.AppointmentTime)}?
                 </Text>
                 
                 <Group justify="flex-end">

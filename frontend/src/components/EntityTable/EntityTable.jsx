@@ -6,7 +6,7 @@ import { generateHealthReportPDF } from '../../utils/pdfGenerator';
 import EditWorkAssignmentModal from '../EditWorkAssignmentModal/EditWorkAssignmentModal';
 import "./EntityTable.css";
 
-export default function EntityTable({ headers, activeTab, appliedFilter, showPrescriptions }) {
+export default function EntityTable({ headers, activeTab, appliedFilter, isAdmin }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -19,7 +19,7 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
 
   useEffect(() => {
     fetchData();
-  }, [activeTab, showPrescriptions]);
+  }, [activeTab]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -28,9 +28,10 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
     try {
       let endpoint = `/api/data/${activeTab === 'healthreport' ? 'healthreports' : activeTab === 'workassignment' ? 'workassignments' : activeTab + 's'}`;
       
-      if (activeTab === 'healthreport' && showPrescriptions) {
-        endpoint += '?show_prescriptions=true';
+      if (activeTab === 'healthreport') {
+        endpoint += '?include_prescription_ids=true';
       }
+      
       
       const response = await fetch(endpoint, {
         credentials: 'include'
@@ -68,6 +69,9 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
         const valueLower = value.toLowerCase();
         
         if (activeTab === 'healthreport') {
+          if (attrLower === 'id') {
+            return item.id && item.id.toString() === value;
+          }
           if (attrLower === 'patientid' || attrLower === 'patient id') {
             return item.patientId && item.patientId.toString() === value;
           }
@@ -75,10 +79,16 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
             return item.physicianId && item.physicianId.toString() === value;
           }
           if (attrLower === 'patient') {
-            return item.patient && item.patient.toLowerCase().includes(valueLower);
+            // Search in both patient name and combined format "name (id)"
+            const combinedPatient = `${item.patient} (${item.patientId})`.toLowerCase();
+            return (item.patient && item.patient.toLowerCase().includes(valueLower)) ||
+                   combinedPatient.includes(valueLower);
           }
           if (attrLower === 'physician') {
-            return item.physician && item.physician.toLowerCase().includes(valueLower);
+            // Search in both physician name and combined format "name (id)"
+            const combinedPhysician = `${item.physician} (${item.physicianId})`.toLowerCase();
+            return (item.physician && item.physician.toLowerCase().includes(valueLower)) ||
+                   combinedPhysician.includes(valueLower);
           }
         }
         
@@ -106,6 +116,21 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
           }
           if (attrLower === 'address') {
             return item.address && item.address.toLowerCase().includes(valueLower);
+          }
+        }
+        
+        if (activeTab === 'prescription') {
+          if (attrLower === 'id') {
+            return item.id && item.id.toString() === value.toString();
+          }
+          if (attrLower === 'healthreportid' || attrLower === 'health report id') {
+            return item.healthReportId && item.healthReportId.toString() === value.toString();
+          }
+          if (attrLower === 'dosage') {
+            return item.dosage && item.dosage.toLowerCase().includes(valueLower);
+          }
+          if (attrLower === 'frequency') {
+            return item.frequency && item.frequency.toLowerCase().includes(valueLower);
           }
         }
         
@@ -186,6 +211,7 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
           title="Edit Work Assignment"
           className="action-button"
           data-action-icon="true"
+          disabled={!isAdmin}
         >
           <IconEdit size={16} />
         </ActionIcon>
@@ -197,6 +223,7 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
           title="Delete Work Assignment"
           className="action-button delete-button"
           data-action-icon="true"
+          disabled={!isAdmin}
         >
           <IconTrash size={16} />
         </ActionIcon>
@@ -282,7 +309,7 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
               <Table.Td>{item.id}</Table.Td>
               <Table.Td className="name-cell">{item.name}</Table.Td>
               <Table.Td>{item.email}</Table.Td>
-              <Table.Td>{item.dob}</Table.Td>
+              <Table.Td>{new Date(item.dob).toLocaleDateString()}</Table.Td>
               <Table.Td className="blood-type">{item.bloodtype}</Table.Td>
               <Table.Td>{item.phone}</Table.Td>
               <Table.Td>{item.address}</Table.Td>
@@ -295,23 +322,32 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
             <Table.Tr key={item.id}>
               <Table.Td>{item.id}</Table.Td>
               <Table.Td>{item.reportDate}</Table.Td>
-              <Table.Td className="name-cell">{item.physician}</Table.Td>
-              <Table.Td>{item.physicianId}</Table.Td>
-              <Table.Td className="name-cell">{item.patient}</Table.Td>
-              <Table.Td>{item.patientId}</Table.Td>
-              <Table.Td>{renderActionButton(item.id)}</Table.Td>
+              <Table.Td className="name-cell">{item.physician} ({item.physicianId})</Table.Td>
+              <Table.Td className="name-cell">{item.patient} ({item.patientId})</Table.Td>
               <Table.Td>{item.weight}</Table.Td>
               <Table.Td>{item.height}</Table.Td>
-              {showPrescriptions && (
-                <>
-                  <Table.Td>{item.prescriptionId || 'N/A'}</Table.Td>
-                  <Table.Td>{item.dosage || 'N/A'}</Table.Td>
-                  <Table.Td>{item.frequency || 'N/A'}</Table.Td>
-                  <Table.Td>{item.startDate || 'N/A'}</Table.Td>
-                  <Table.Td>{item.endDate || 'N/A'}</Table.Td>
-                  <Table.Td>{item.instructions || 'N/A'}</Table.Td>
-                </>
-              )}
+              <Table.Td>
+                {item.prescriptionIds && item.prescriptionIds.length > 0 ? (
+                  item.prescriptionIds.map((id, index) => (
+                    <span key={id}>
+                      <Button
+                        variant="subtle"
+                        size="xs"
+                        component="a"
+                        href={`/admin?table=prescription&filter=id%2C${id}`}
+                        target="_self"
+                        style={{ textDecoration: 'underline', padding: '2px 4px' }}
+                      >
+                        {id}
+                      </Button>
+                      {index < item.prescriptionIds.length - 1 && ' '}
+                    </span>
+                  ))
+                ) : (
+                  'N/A'
+                )}
+              </Table.Td>
+              <Table.Td>{renderActionButton(item.id)}</Table.Td>
             </Table.Tr>
           );
         
@@ -349,6 +385,34 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
             </Table.Tr>
           );
         
+        case 'prescription':
+          return (
+            <Table.Tr key={item.id}>
+              <Table.Td>{item.id || 'N/A'}</Table.Td>
+              <Table.Td>
+                {item.healthReportId ? (
+                  <Button
+                    variant="subtle"
+                    size="xs"
+                    component="a"
+                    href={`/admin?table=healthreport&filter=id%2C${item.healthReportId}`}
+                    target="_self"
+                    style={{ textDecoration: 'underline', padding: '2px 4px' }}
+                  >
+                    {item.healthReportId}
+                  </Button>
+                ) : (
+                  'N/A'
+                )}
+              </Table.Td>
+              <Table.Td>{item.dosage || 'N/A'}</Table.Td>
+              <Table.Td>{item.frequency || 'N/A'}</Table.Td>
+              <Table.Td>{item.startDate || 'N/A'}</Table.Td>
+              <Table.Td>{item.endDate || 'N/A'}</Table.Td>
+              <Table.Td>{item.instructions || 'N/A'}</Table.Td>
+            </Table.Tr>
+          );
+        
         default:
           return null;
       }
@@ -358,7 +422,7 @@ export default function EntityTable({ headers, activeTab, appliedFilter, showPre
   return (
     <div className="entity-table-container">
       <div className="table-scroll-wrapper">
-        <Table striped highlightOnHover withTableBorder withColumnBorders className={`entity-table ${activeTab === 'healthreport' && showPrescriptions ? 'with-prescriptions' : ''}`}>
+        <Table striped highlightOnHover withTableBorder withColumnBorders className="entity-table">
         <Table.Thead>
           <Table.Tr>
             {headers.map((header) => (

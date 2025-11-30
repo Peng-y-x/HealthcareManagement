@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, TextInput, Button, Box, Title, Text, Switch, Group } from '@mantine/core';
+import { Tabs, TextInput, Button, Box, Title, Text, Group } from '@mantine/core';
 import { IconSearch, IconPlus } from '@tabler/icons-react';
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import EntityTable from '../../components/EntityTable/EntityTable';
 import WorkAssignmentModal from '../../components/WorkAssignmentModal/WorkAssignmentModal';
 import CreateClinicModal from '../../components/CreateClinicModal/CreateClinicModal';
@@ -9,11 +10,11 @@ import "./DataFiltering.css";
 
 export default function DataFiltering() {
     const [searchParams, setSearchParams] = useSearchParams();
+    const { isAdmin } = useAuth();
     
     const [activeTab, setActiveTab] = useState('patient');
     const [filterQuery, setFilterQuery] = useState('');
     const [appliedFilter, setAppliedFilter] = useState('');
-    const [showPrescriptions, setShowPrescriptions] = useState(false);
     const [workAssignmentModalOpen, setWorkAssignmentModalOpen] = useState(false);
     const [createClinicModalOpen, setCreateClinicModalOpen] = useState(false);
     const [tableKey, setTableKey] = useState(0);
@@ -68,15 +69,15 @@ export default function DataFiltering() {
             case 'patient':
                 return ['#', 'NAME', 'EMAIL', 'DOB', 'BLOOD TYPE', 'PHONE NUMBER', 'ADDRESS', 'ACTIONS'];
             case 'healthreport':
-                const baseHeaders = ['#', 'REPORT DATE', 'PHYSICIAN', 'PHYSICIAN ID', 'PATIENT', 'PATIENT ID', 'ACTIONS', 'WEIGHT', 'HEIGHT'];
-                const prescriptionHeaders = ['PRESCRIPTION ID', 'DOSAGE', 'FREQUENCY', 'START DATE', 'END DATE', 'INSTRUCTIONS'];
-                return showPrescriptions ? [...baseHeaders.slice(0, 9), ...prescriptionHeaders] : baseHeaders;
+                return ['#', 'REPORT DATE', 'PHYSICIAN (ID)', 'PATIENT (ID)', 'WEIGHT', 'HEIGHT', 'PRESCRIPTIONS', 'ACTIONS'];
             case 'physician':
                 return ['#', 'NAME', 'EMAIL', 'PHONE NUMBER', 'DEPARTMENT', 'ACTIONS'];
             case 'workassignment':
                 return ['CLINIC ID', 'PHYSICIAN ID', 'SCHEDULE ID', 'WORKING DAYS', 'DATE JOINED', 'HOURLY RATE', 'ACTIONS'];
             case 'clinic':
                 return ['#', 'NAME', 'ADDRESS'];
+            case 'prescription':
+                return ['#', 'HEALTH REPORT ID', 'DOSAGE', 'FREQUENCY', 'START DATE', 'END DATE', 'INSTRUCTIONS'];
             default:
                 return [];
         }
@@ -94,6 +95,8 @@ export default function DataFiltering() {
                 return 'Filter by: name, Downtown; address, Medical OR name, Center';
             case 'workassignment':
                 return 'Filter by: any field value';
+            case 'prescription':
+                return 'Filter by: id, 123; healthReportId, 456 OR dosage, 250mg';
             default:
                 return 'Enter filter criteria';
         }
@@ -116,6 +119,7 @@ export default function DataFiltering() {
                             <Tabs.Tab value="physician">👨‍⚕️ Physicians</Tabs.Tab>
                             <Tabs.Tab value="workassignment">📝 Work Assignments</Tabs.Tab>
                             <Tabs.Tab value="clinic">🏢 Clinics</Tabs.Tab>
+                            <Tabs.Tab value="prescription">💊 Prescriptions</Tabs.Tab>
                         </Tabs.List>
                     </Tabs>
                 </div>
@@ -125,6 +129,7 @@ export default function DataFiltering() {
                         <Button 
                             leftSection={<IconPlus size={16} />}
                             onClick={() => setWorkAssignmentModalOpen(true)}
+                            disabled={!isAdmin}
                         >
                             Create Work Assignment
                         </Button>
@@ -136,6 +141,7 @@ export default function DataFiltering() {
                         <Button 
                             leftSection={<IconPlus size={16} />}
                             onClick={() => setCreateClinicModalOpen(true)}
+                            disabled={!isAdmin}
                         >
                             Create Clinic
                         </Button>
@@ -179,15 +185,6 @@ export default function DataFiltering() {
                     </Text>
                 </div>
 
-                {activeTab === 'healthreport' && (
-                    <Group mb="md" justify="flex-end">
-                        <Switch
-                            label="Show Prescriptions"
-                            checked={showPrescriptions}
-                            onChange={(event) => setShowPrescriptions(event.currentTarget.checked)}
-                        />
-                    </Group>
-                )}
 
                 <div className="table-section">
                     <Title order={2} className="table-title">
@@ -196,6 +193,7 @@ export default function DataFiltering() {
                         {activeTab === 'physician' && '👨‍⚕️ Physician Directory'}
                         {activeTab === 'workassignment' && '📝 Work Assignments'}
                         {activeTab === 'clinic' && '🏢 Clinic Locations'}
+                        {activeTab === 'prescription' && '💊 Prescription Records'}
                     </Title>
                     
                     <EntityTable 
@@ -203,7 +201,7 @@ export default function DataFiltering() {
                         headers={getTableHeaders(activeTab)} 
                         activeTab={activeTab} 
                         appliedFilter={appliedFilter}
-                        showPrescriptions={showPrescriptions}
+                        isAdmin={isAdmin}
                     />
                 </div>
             </div>

@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Title, Text, Loader, Notification } from '@mantine/core';
-import { IconInfoCircle } from '@tabler/icons-react';
+import { Box, Title, Text, Loader, Notification, Button, Group } from '@mantine/core';
+import { IconInfoCircle, IconPlus } from '@tabler/icons-react';
 import DateFilter from '../../components/DateFilter/DateFilter';
 import ReportCard from '../../components/ReportCard/ReportCard';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import "./HealthReports.css";
 
 export default function HealthReports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { user } = useAuth();
+  const [expandedCard, setExpandedCard] = useState(null);
+  const { user, isPhysician } = useAuth();
+  const navigate = useNavigate();
 
   const fetchReports = async (startDate, endDate) => {
     if (!user?.reference_id) {
@@ -22,7 +25,11 @@ export default function HealthReports() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/healthreports?patient_id=${user.reference_id}`, {
+      const url = isPhysician 
+        ? `/api/healthreports` 
+        : `/api/healthreports?patient_id=${user.reference_id}`;
+      
+      const response = await fetch(url, {
         credentials: 'include'
       });
       
@@ -62,11 +69,27 @@ export default function HealthReports() {
   return (
     <Box className="health-reports-container">
       <div className="health-reports">
-        <Title order={1} className="page-title">🏥 Health Reports Center</Title>
+        <Title order={1} className="page-title">
+          {isPhysician ? "🏥 Patient Health Reports" : "🏥 Health Reports Center"}
+        </Title>
         
         <Text className="page-description">
-          View and download your medical reports from appointments.
+          {isPhysician 
+            ? "View and manage health reports for your patients. Create new reports for patients with appointments."
+            : "View and download your medical reports from appointments."
+          }
         </Text>
+
+        {isPhysician && (
+          <Group justify="flex-end" mb="lg">
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={() => navigate('/create-health-report')}
+            >
+              Create New Report
+            </Button>
+          </Group>
+        )}
 
         {error && (
           <Notification 
@@ -84,18 +107,23 @@ export default function HealthReports() {
 
         <div className="reports-section">
           <Title order={2} className="section-title">
-            📋 Your Reports ({reports.length})
+            📋 {isPhysician ? 'Patient Reports' : 'Your Reports'} ({reports.length})
           </Title>
 
           <div className="reports-container">
             {loading ? (
               <div className="loading-state">
                 <Loader size="lg" />
-                <Text>Loading your health reports...</Text>
+                <Text>Loading {isPhysician ? 'patient' : 'your'} health reports...</Text>
               </div>
             ) : reports.length > 0 ? (
               reports.map((report) => (
-                <ReportCard key={report.id} report={report} />
+                <ReportCard 
+                  key={report.ReportID || report.id} 
+                  report={report} 
+                  expandedCard={expandedCard}
+                  onToggleExpansion={setExpandedCard}
+                />
               ))
             ) : (
               <div className="empty-state">

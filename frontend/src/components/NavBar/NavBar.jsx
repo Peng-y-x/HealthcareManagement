@@ -5,7 +5,7 @@ import "./NavBar.css"
 
 export default function NavBar() {
     const navigate = useNavigate()
-    const { user, isAuthenticated, isPatient, isPhysician, logout } = useAuth()
+    const { user, isAuthenticated, isPatient, isPhysician, isAdmin, logout } = useAuth()
     const [activeDropdown, setActiveDropdown] = useState(null)
     const navRef = useRef(null)
 
@@ -89,8 +89,24 @@ export default function NavBar() {
                     </>
                 )}
 
-                {isPhysician && (
-                    <li><NavLink to="/admin" className={({ isActive }) => (isActive ? "Active" : "")}>Admin</NavLink></li>
+                {(isPhysician || isAdmin) && (
+                    <> 
+                        <li><NavLink to="/admin" className={({ isActive }) => (isActive ? "Active" : "")}>Admin</NavLink></li>
+                        {isPhysician && (<li className="dropdown">
+                            <span 
+                                className={`dropdown-btn ${activeDropdown === 'workspace' ? 'active' : ''}`}
+                                onClick={() => toggleDropdown('workspace')}
+                            >
+                                Workspace ▼
+                            </span>
+                            {activeDropdown === 'workspace' && (
+                                <div className="dropdown-menu">
+                                    <NavLink to="/appointments" onClick={closeDropdowns}>Appointments</NavLink>
+                                    <NavLink to="/reports" onClick={closeDropdowns}>Health Reports</NavLink>
+                                </div>
+                            )}
+                        </li>)}
+                    </>
                 )}
             </ul>
 
