@@ -497,3 +497,26 @@ JOIN
     Patient pat ON a.PatientID = pat.PatientID
 ORDER BY
     a.AppointmentDate, a.AppointmentTime;
+
+-- admin is default user and has all priviledges
+
+create or replace role patient_role;
+grant all privileges on Appointment to patient_role;
+grant select, insert on User to patient_role;
+grant select on HealthReport to patient_role;
+grant select on Prescription to patient_role;
+grant select, update on billing to patient_role;
+grant select, insert, update on MedicalHistory to patient_role;
+
+create or replace role physician_role;
+grant select, insert, update on HealthReport to physician_role;
+grant select, insert, update on Schedule to physician_role;
+grant select, insert, update on Billing to physician_role;
+grant select, insert on Prescription to physician_role;
+grant select, insert on WorksAt to physician_role;
+
+create or replace user 'the_patient'@'localhost';
+create or replace user 'the_physician'@'localhost';
+
+grant patient_role to 'the_patient';
+grant physician_role to 'the_physician';
