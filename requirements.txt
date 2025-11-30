@@ -4,3 +4,4 @@ Flask-Login==0.6.3
 bcrypt==4.1.2
 python-dotenv==1.0.0
 Flask-CORS==4.0.0
+cryptography

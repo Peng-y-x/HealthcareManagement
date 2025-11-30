@@ -41,6 +41,10 @@ def admin_required(f):
 @auth_bp.route('/login', methods=['POST'])
 def api_login():
     """API endpoint for login"""
+    from flask import g
+    # Force admin DB connection for login (needs to query User table and update LastLogin)
+    g.force_db_role = 'admin'
+
     data = request.json
 
     if not data or 'email' not in data or 'password' not in data:
@@ -95,6 +99,10 @@ def api_current_user():
 @auth_bp.route('/register/patient', methods=['POST'])
 def register_patient():
     """Patient registration API endpoint"""
+    from flask import g
+    # Force admin DB connection for registration (needs INSERT on User and Patient tables)
+    g.force_db_role = 'admin'
+
     data = request.json
 
     if not data:
@@ -154,6 +162,10 @@ def register_patient():
 @auth_bp.route('/register/physician', methods=['POST'])
 def register_physician():
     """Physician registration API endpoint"""
+    from flask import g
+    # Force admin DB connection for registration (needs INSERT on User and Physician tables)
+    g.force_db_role = 'admin'
+
     data = request.json
 
     if not data:
