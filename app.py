@@ -131,8 +131,8 @@ def reset_database():
         print(f"Database drop failed: {e}")
 
 # Setup database on startup #SJ
-#setup_database()
-#reset_database()
+setup_database()
+reset_database()
 #exit(1)
 
 # Initialize Flask-Login
@@ -416,10 +416,16 @@ def make_appointment():
                 data['AppointmentDate'],
                 data['AppointmentTime']
             ))
-        
+
         return jsonify({'success': True, 'message': 'Appointment booked successfully'}), 201
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 400
+        # Extract the actual error message from MySQL exception
+        error_message = str(e)
+        # MySQL exceptions often have the format: (error_code, "error message")
+        # Extract just the message part if possible
+        if hasattr(e, 'args') and len(e.args) > 1:
+            error_message = e.args[1]
+        return jsonify({'success': False, 'error': error_message}), 400
 
 
 @app.route("/api/healthreports", methods=["GET"])

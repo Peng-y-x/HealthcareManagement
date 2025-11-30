@@ -344,7 +344,9 @@ VALUES
 
 DELIMITER $$
 
-CREATE OR REPLACE FUNCTION fn_GetPatientAge (
+DROP FUNCTION IF EXISTS fn_GetPatientAge$$
+
+CREATE FUNCTION fn_GetPatientAge (
     p_PatientID INT
 )
 RETURNS INT
@@ -370,7 +372,9 @@ DELIMITER ;
 
 DELIMITER $$
 
-CREATE OR REPLACE PROCEDURE sp_BookAppointment (
+DROP PROCEDURE IF EXISTS sp_BookAppointment$$
+
+CREATE PROCEDURE sp_BookAppointment (
     IN p_PatientID INT,
     IN p_PhysicianID INT,
     IN p_ClinicID INT,
@@ -470,7 +474,9 @@ DELIMITER ;
 
 -- (3) All scheduled timeslots belonging to physician and clinic
 
-CREATE OR REPLACE VIEW v_BookedTimeSlots AS
+DROP VIEW IF EXISTS v_BookedTimeSlots;
+
+CREATE VIEW v_BookedTimeSlots AS
 SELECT
     a.AppointmentID,
     a.AppointmentDate,
