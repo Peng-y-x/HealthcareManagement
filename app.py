@@ -131,8 +131,8 @@ def reset_database():
         print(f"Database drop failed: {e}")
 
 # Setup database on startup #SJ
-setup_database()
-reset_database()
+# setup_database()
+# reset_database()
 #exit(1)
 
 # Initialize Flask-Login
