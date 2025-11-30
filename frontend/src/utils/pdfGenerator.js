@@ -169,6 +169,7 @@ export const generateHealthReportPDF = async (reportData) => {
       }
       
       prescriptionInfo.push(
+        `Drug Name: ${prescription.drugName}`,
         `Dosage: ${prescription.dosage}`,
         `Frequency: ${prescription.frequency}`,
         `Start Date: ${new Date(prescription.startDate).toLocaleDateString()}`,

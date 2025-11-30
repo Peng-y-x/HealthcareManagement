@@ -145,6 +145,9 @@ export default function ReportCard({ report, expandedCard, onToggleExpansion }) 
                 <div key={index} className="prescription-item">
                   <div className="prescription-details">
                     <Text size="sm" weight={500}>
+                       {prescription.drugName}
+                    </Text>
+                    <Text size="sm">
                       📋 {prescription.dosage} - {prescription.frequency}
                     </Text>
                     <Text size="xs" color="dimmed">

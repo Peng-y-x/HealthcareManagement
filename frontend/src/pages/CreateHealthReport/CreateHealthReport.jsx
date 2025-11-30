@@ -40,6 +40,7 @@ export default function CreateHealthReport() {
     // Step 2: Prescriptions
     const [prescriptions, setPrescriptions] = useState([]);
     const [currentPrescription, setCurrentPrescription] = useState({
+        drugName: '',
         dosage: '',
         frequency: '',
         startDate: new Date(),
@@ -91,8 +92,8 @@ export default function CreateHealthReport() {
 
     const addPrescription = () => {
         // Validate required fields
-        if (!currentPrescription.dosage || !currentPrescription.frequency || !currentPrescription.instructions) {
-            setError('Please fill in dosage, frequency, and instructions');
+        if (!currentPrescription.drugName || !currentPrescription.dosage || !currentPrescription.frequency || !currentPrescription.instructions) {
+            setError('Please fill in drug name, dosage, frequency, and instructions');
             return;
         }
         
@@ -110,6 +111,7 @@ export default function CreateHealthReport() {
         
         setPrescriptions([...prescriptions, { ...currentPrescription, id: Date.now() }]);
         setCurrentPrescription({
+            drugName: '',
             dosage: '',
             frequency: '',
             startDate: new Date(),
@@ -131,6 +133,7 @@ export default function CreateHealthReport() {
                 weight: parseFloat(weight),
                 height: parseFloat(height),
                 prescriptions: prescriptions.map(p => ({
+                    drugName: p.drugName,
                     dosage: p.dosage,
                     frequency: p.frequency,
                     startDate: new Date(p.startDate).toISOString().split('T')[0],
@@ -241,6 +244,15 @@ export default function CreateHealthReport() {
                                 
                                 <Group grow mb="md">
                                     <TextInput
+                                        label="Drug Name"
+                                        placeholder="e.g., Aspirin"
+                                        value={currentPrescription.drugName}
+                                        onChange={(e) => setCurrentPrescription({
+                                            ...currentPrescription,
+                                            drugName: e.target.value
+                                        })}
+                                    />
+                                    <TextInput
                                         label="Dosage"
                                         placeholder="e.g., 250mg"
                                         value={currentPrescription.dosage}
@@ -293,7 +305,7 @@ export default function CreateHealthReport() {
                                 <Button
                                     leftSection={<IconPlus size={16} />}
                                     onClick={addPrescription}
-                                    disabled={!currentPrescription.dosage || !currentPrescription.frequency || !currentPrescription.instructions}
+                                    disabled={!currentPrescription.drugName || !currentPrescription.dosage || !currentPrescription.frequency || !currentPrescription.instructions}
                                 >
                                     Add Prescription
                                 </Button>
@@ -305,6 +317,7 @@ export default function CreateHealthReport() {
                                     <Table striped highlightOnHover>
                                         <Table.Thead>
                                             <Table.Tr>
+                                                <Table.Th>Drug Name</Table.Th>
                                                 <Table.Th>Dosage</Table.Th>
                                                 <Table.Th>Frequency</Table.Th>
                                                 <Table.Th>Duration</Table.Th>
@@ -315,6 +328,7 @@ export default function CreateHealthReport() {
                                         <Table.Tbody>
                                             {prescriptions.map((prescription) => (
                                                 <Table.Tr key={prescription.id}>
+                                                    <Table.Td>{prescription.drugName}</Table.Td>
                                                     <Table.Td>{prescription.dosage}</Table.Td>
                                                     <Table.Td>{prescription.frequency}</Table.Td>
                                                     <Table.Td>
@@ -369,6 +383,7 @@ export default function CreateHealthReport() {
                                     <Table>
                                         <Table.Thead>
                                             <Table.Tr>
+                                                <Table.Th>Drug Name</Table.Th>
                                                 <Table.Th>Dosage</Table.Th>
                                                 <Table.Th>Frequency</Table.Th>
                                                 <Table.Th>Duration</Table.Th>
@@ -378,6 +393,7 @@ export default function CreateHealthReport() {
                                         <Table.Tbody>
                                             {prescriptions.map((prescription) => (
                                                 <Table.Tr key={prescription.id}>
+                                                    <Table.Td>{prescription.drugName}</Table.Td>
                                                     <Table.Td>{prescription.dosage}</Table.Td>
                                                     <Table.Td>{prescription.frequency}</Table.Td>
                                                     <Table.Td>

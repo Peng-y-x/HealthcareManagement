@@ -91,6 +91,7 @@ export default function Prescriptions() {
                 <Table.Tr>
                   <Table.Th>Prescription ID</Table.Th>
                   <Table.Th>Physician ID</Table.Th>
+                  <Table.Th>Drug Name</Table.Th>
                   <Table.Th>Dosage</Table.Th>
                   <Table.Th>Frequency</Table.Th>
                   <Table.Th>Start Date</Table.Th>
@@ -104,6 +105,7 @@ export default function Prescriptions() {
                   <Table.Tr key={prescription.PrescriptionID}>
                     <Table.Td>{prescription.PrescriptionID}</Table.Td>
                     <Table.Td>{prescription.PhysicianID}</Table.Td>
+                    <Table.Td>{prescription.DrugName}</Table.Td>
                     <Table.Td>{prescription.Dosage}</Table.Td>
                     <Table.Td>{prescription.Frequency}</Table.Td>
                     <Table.Td>{formatDate(prescription.StartDate)}</Table.Td>

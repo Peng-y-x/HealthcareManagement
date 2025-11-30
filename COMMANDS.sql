@@ -114,6 +114,7 @@ create table if not exists Prescription(
 PrescriptionID int,
 ReportID int,
 PhysicianID int,
+DrugName varchar(100),
 Dosage varchar(50),
 Frequency varchar(50),
 StartDate date,
@@ -263,18 +264,18 @@ VALUES
 (10, 10, 10, 10, 190, FALSE, '2025-10-10', '2025-10-24');
 
 -- 9. Prescription
-INSERT INTO Prescription (PrescriptionID, ReportID, PhysicianID, Dosage, Frequency, StartDate, EndDate, Instructions)
+INSERT INTO Prescription (PrescriptionID, ReportID, PhysicianID, DrugName, Dosage, Frequency, StartDate, EndDate, Instructions)
 VALUES
-(1, 1, 1, '500mg', '2/day', '2025-10-01', '2025-10-07', 'Take after meals'),
-(2, 2, 2, '250mg', '3/day', '2025-10-02', '2025-10-08', 'Avoid alcohol'),
-(3, 3, 3, '10ml', '2/day', '2025-10-03', '2025-10-09', 'Shake well before use'),
-(4, 4, 4, '100mg', '1/day', '2025-10-04', '2025-10-10', 'Take with water'),
-(5, 5, 5, '200mg', '2/day', '2025-10-05', '2025-10-11', 'Do not crush'),
-(6, 6, 6, '1 tab', '1/day', '2025-10-06', '2025-10-12', 'Before breakfast'),
-(7, 7, 7, '5ml', '3/day', '2025-10-07', '2025-10-13', 'Store in cool place'),
-(8, 8, 8, '300mg', '2/day', '2025-10-08', '2025-10-14', 'Avoid sunlight'),
-(9, 9, 9, '400mg', '1/day', '2025-10-09', '2025-10-15', 'Take on empty stomach'),
-(10, 10, 10, '250mg', '2/day', '2025-10-10', '2025-10-16', 'Do not skip doses');
+(1, 1, 1, 'Aspirin', '500mg', '2/day', '2025-10-01', '2025-10-07', 'Take after meals'),
+(2, 2, 2, 'Ibuprofen', '250mg', '3/day', '2025-10-02', '2025-10-08', 'Avoid alcohol'),
+(3, 3, 3, 'Paracetamol', '10ml', '2/day', '2025-10-03', '2025-10-09', 'Shake well before use'),
+(4, 4, 4, 'Acetaminophen', '100mg', '1/day', '2025-10-04', '2025-10-10', 'Take with water'),
+(5, 5, 5, 'Amoxycillin', '200mg', '2/day', '2025-10-05', '2025-10-11', 'Do not crush'),
+(6, 6, 6, 'Ciprofloxacin', '1 tab', '1/day', '2025-10-06', '2025-10-12', 'Before breakfast'),
+(7, 7, 7, 'Pillsner', '5ml', '3/day', '2025-10-07', '2025-10-13', 'Store in cool place'),
+(8, 8, 8, 'Tylenol Xtra', '300mg', '2/day', '2025-10-08', '2025-10-14', 'Avoid sunlight'),
+(9, 9, 9, 'Simvastatin', '400mg', '1/day', '2025-10-09', '2025-10-15', 'Take on empty stomach'),
+(10, 10, 10, 'Six Seven Pill', '250mg', '2/day', '2025-10-10', '2025-10-16', 'Do not skip doses');
 
 -- 10. MedicalHistory
 INSERT INTO MedicalHistory (HistoryID, PatientID, HealthCondition, DiagnosisDate, TreatmentReceived, Outcome, OngoingCare)

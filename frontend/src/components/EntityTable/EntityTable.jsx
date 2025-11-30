@@ -126,6 +126,9 @@ export default function EntityTable({ headers, activeTab, appliedFilter, isAdmin
           if (attrLower === 'healthreportid' || attrLower === 'health report id') {
             return item.healthReportId && item.healthReportId.toString() === value.toString();
           }
+          if (attrLower === 'drugname') {
+            return item.drugName && item.drugName.toLowerCase().includes(valueLower);
+          }
           if (attrLower === 'dosage') {
             return item.dosage && item.dosage.toLowerCase().includes(valueLower);
           }
@@ -405,6 +408,7 @@ export default function EntityTable({ headers, activeTab, appliedFilter, isAdmin
                   'N/A'
                 )}
               </Table.Td>
+              <Table.Td>{item.drugName || 'N/A'}</Table.Td>
               <Table.Td>{item.dosage || 'N/A'}</Table.Td>
               <Table.Td>{item.frequency || 'N/A'}</Table.Td>
               <Table.Td>{item.startDate || 'N/A'}</Table.Td>

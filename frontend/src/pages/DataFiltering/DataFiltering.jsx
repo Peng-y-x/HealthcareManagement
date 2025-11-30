@@ -77,7 +77,7 @@ export default function DataFiltering() {
             case 'clinic':
                 return ['#', 'NAME', 'ADDRESS'];
             case 'prescription':
-                return ['#', 'HEALTH REPORT ID', 'DOSAGE', 'FREQUENCY', 'START DATE', 'END DATE', 'INSTRUCTIONS'];
+                return ['#', 'HEALTH REPORT ID', 'DRUG NAME', 'DOSAGE', 'FREQUENCY', 'START DATE', 'END DATE', 'INSTRUCTIONS'];
             default:
                 return [];
         }
@@ -96,7 +96,7 @@ export default function DataFiltering() {
             case 'workassignment':
                 return 'Filter by: any field value';
             case 'prescription':
-                return 'Filter by: id, 123; healthReportId, 456 OR dosage, 250mg';
+                return 'Filter by: id, 123; healthReportId, 456 OR drugName, Aspirin OR dosage, 250mg';
             default:
                 return 'Enter filter criteria';
         }

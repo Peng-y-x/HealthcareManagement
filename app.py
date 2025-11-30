@@ -545,12 +545,13 @@ def create_health_report():
                 prescription_id = prescription_id_result[0]['nextId']
                 
                 prescription_query = """
-                    INSERT INTO Prescription (PrescriptionID, ReportID, Dosage, Frequency, StartDate, EndDate, Instructions)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO Prescription (PrescriptionID, ReportID, DrugName, Dosage, Frequency, StartDate, EndDate, Instructions)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 execute_update(prescription_query, (
                     prescription_id,
                     report_id,
+                    prescription['drugName'],
                     prescription['dosage'],
                     prescription['frequency'],
                     prescription['startDate'],
@@ -667,13 +668,13 @@ def write_prescription():
             return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
         
         # Validate required fields
-        required_fields = ['PrescriptionID', 'ReportID', 'PhysicianID', 'Dosage', 'Frequency', 'StartDate', 'EndDate', 'Instructions']
+        required_fields = ['PrescriptionID', 'ReportID', 'PhysicianID', 'DrugName', 'Dosage', 'Frequency', 'StartDate', 'EndDate', 'Instructions']
         for field in required_fields:
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
         query = """
-            INSERT INTO Prescription (PrescriptionID, ReportID, PhysicianID, Dosage, Frequency, StartDate, EndDate, Instructions)
+            INSERT INTO Prescription (PrescriptionID, ReportID, PhysicianID, DrugName, Dosage, Frequency, StartDate, EndDate, Instructions)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
 
@@ -681,6 +682,7 @@ def write_prescription():
                 data['PrescriptionID'],
                 data['ReportID'],
                 data['PhysicianID'],
+                data['DrugName'],
                 data['Dosage'],
                 data['Frequency'],
                 data['StartDate'],
@@ -1105,7 +1107,7 @@ def get_health_reports_data():
                        p.Name as physician, pt.Name as patient,
                        hr.PhysicianID as physicianId, hr.PatientID as patientId,
                        hr.Weight as weight, hr.Height as height,
-                       pr.PrescriptionID as prescriptionId, pr.Dosage as dosage,
+                       pr.PrescriptionID as prescriptionId, pr.DrugName as drugName, pr.Dosage as dosage,
                        pr.Frequency as frequency, pr.StartDate as startDate,
                        pr.EndDate as endDate, pr.Instructions as instructions
                 FROM HealthReport hr
@@ -1231,7 +1233,7 @@ def get_prescriptions_data():
         
         query = """
             SELECT PrescriptionID as id, ReportID as healthReportId,
-                   Dosage as dosage, Frequency as frequency,
+                   DrugName as drugName, Dosage as dosage, Frequency as frequency,
                    StartDate as startDate, EndDate as endDate,
                    Instructions as instructions
             FROM Prescription
@@ -1263,7 +1265,7 @@ def get_health_report_for_download(report_id):
                    p.Name as PhysicianName, p.Department as PhysicianDepartment,
                    pt.Name as PatientName, pt.DOB as PatientDOB, pt.BloodType,
                    pt.PhoneNumber as PatientPhone, pt.Address as PatientAddress,
-                   pr.PrescriptionID, pr.Dosage, pr.Frequency, pr.StartDate,
+                   pr.PrescriptionID, pr.DrugName, pr.Dosage, pr.Frequency, pr.StartDate,
                    pr.EndDate, pr.Instructions
             FROM HealthReport hr
             JOIN Physician p ON p.PhysicianID = hr.PhysicianID
@@ -1301,6 +1303,7 @@ def get_health_report_for_download(report_id):
             if row['PrescriptionID']:
                 prescriptions.append({
                     'prescriptionId': row['PrescriptionID'],
+                    'drugName': row['DrugName'],
                     'dosage': row['Dosage'],
                     'frequency': row['Frequency'],
                     'startDate': row['StartDate'],
@@ -1335,7 +1338,7 @@ def get_health_report_for_patient_download(report_id):
                    p.Name as PhysicianName, p.Department as PhysicianDepartment,
                    pt.Name as PatientName, pt.DOB as PatientDOB, pt.BloodType,
                    pt.PhoneNumber as PatientPhone, pt.Address as PatientAddress,
-                   pr.PrescriptionID, pr.Dosage, pr.Frequency, pr.StartDate,
+                   pr.PrescriptionID, pr.DrugName, pr.Dosage, pr.Frequency, pr.StartDate,
                    pr.EndDate, pr.Instructions
             FROM HealthReport hr
             JOIN Physician p ON p.PhysicianID = hr.PhysicianID
@@ -1369,6 +1372,7 @@ def get_health_report_for_patient_download(report_id):
         if report_data['PrescriptionID']:
             report['prescription'] = {
                 'prescriptionId': '',  # Remove ID for patient view
+                'drugName': report_data['DrugName'],
                 'dosage': report_data['Dosage'],
                 'frequency': report_data['Frequency'],
                 'startDate': report_data['StartDate'],
