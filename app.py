@@ -23,21 +23,24 @@ init_app(app)
 def setup_database():
     """Setup database and tables if they don't exist"""
     import pymysql
-    from config import DATABASE_CONFIG
+    from config import get_db_config
     import re
-    
+
     try:
+        # Use admin credentials for database setup
+        admin_config = get_db_config('admin')
+
         # Connect without specifying database to create it
         conn = pymysql.connect(
-            host=DATABASE_CONFIG['host'],
-            user=DATABASE_CONFIG['user'],
-            password=DATABASE_CONFIG['password']
+            host=admin_config['host'],
+            user=admin_config['user'],
+            password=admin_config['password']
         )
         cursor = conn.cursor()
-        
+
         # Create database if it doesn't exist
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DATABASE_CONFIG['database']}")
-        cursor.execute(f"USE {DATABASE_CONFIG['database']}")
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {admin_config['database']}")
+        cursor.execute(f"USE {admin_config['database']}")
         
         # Read SQL file
         with open('COMMANDS.sql', 'r') as f:
