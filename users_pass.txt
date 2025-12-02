@@ -1,0 +1,3 @@
+Physician accounts - doctor123
+Patient accounts - password123
+Admin- admin123
