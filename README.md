@@ -186,16 +186,96 @@ healthcare-management/
 
 ## API Endpoints
 
+### Authentication Endpoints
 | Endpoint | Method | Description | Auth Required |
 |----------|--------|-------------|---------------|
 | `/auth/login` | POST | User login | No |
 | `/auth/logout` | POST | User logout | Yes |
-| `/auth/current-user` | GET | Get current user | Yes |
-| `/auth/register/patient` | POST | Register patient | No |
-| `/auth/register/physician` | POST | Register physician | No |
+| `/auth/current-user` | GET | Get current user info with profile | Yes |
+| `/auth/register/patient` | POST | Register new patient | No |
+| `/auth/register/physician` | POST | Register new physician | No |
+
+### Patient Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
 | `/api/patients` | GET | Get all patients | Yes |
 | `/api/patients/<id>` | GET | Get patient by ID | No |
-| `/api/patients` | POST | Create patient | No |
+| `/api/patients` | POST | Create new patient | No |
+| `/api/data/patients` | GET | Get all patients for data filtering (Physician/Admin) | Yes |
+
+### Physician Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/physicians` | GET | Get physicians with pagination | Yes |
+| `/api/physician/patients` | GET | Get patients for current physician (Physician/Admin) | Yes |
+| `/api/data/physicians` | GET | Get all physicians for data filtering (Physician/Admin) | Yes |
+
+### Appointment Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/appointments` | GET | Get appointments for logged-in user | Yes |
+| `/api/appointments` | POST | Create new appointment | Yes |
+| `/api/appointments/<id>` | DELETE | Delete/cancel appointment | Yes |
+| `/api/booked-timeslots` | GET | Get booked time slots for physician/clinic | Yes |
+
+### Health Report Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/healthreports` | GET | Get health reports for patient or physician | Yes |
+| `/api/healthreports` | POST | Create new health report with prescriptions (Physician/Admin) | Yes |
+| `/api/healthreports/<id>/download` | GET | Get health report for PDF download (Physician/Admin) | Yes |
+| `/api/patient/healthreports/<id>/download` | GET | Get health report for patient PDF download (Patient) | Yes |
+| `/api/data/healthreports` | GET | Get all health reports for data filtering (Physician/Admin) | Yes |
+
+### Prescription Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/prescription` | GET | Get prescriptions for patient | Yes |
+| `/api/prescription` | POST | Create new prescription | Yes |
+| `/api/data/prescriptions` | GET | Get all prescriptions for data filtering (Physician/Admin) | Yes |
+
+### Medical History Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/history` | GET | Get medical history for patient | Yes |
+| `/api/history` | POST | Create medical history entry | Yes |
+| `/api/history` | PUT | Update medical history entry | Yes |
+
+### Billing Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/billing` | GET | Get bills for patient | Yes |
+| `/api/billing` | POST | Create new bill | Yes |
+| `/api/billing/pay` | POST | Mark bill as paid | Yes |
+
+### Clinic Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/clinics` | GET | Get all clinics or specific clinic by ID | Yes |
+| `/api/clinics` | POST | Create new clinic | Yes |
+| `/api/clinic/create` | POST | Create new clinic (Admin) | Yes |
+| `/api/data/clinics` | GET | Get all clinics for data filtering (Physician/Admin) | Yes |
+
+### Work Assignment Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/worksat` | GET | Get work assignments for physician | Yes |
+| `/api/worksat` | POST | Create work assignment | Yes |
+| `/api/workassignment/check` | GET | Check if work assignment exists | Yes |
+| `/api/workassignment/create` | POST | Create work assignment (Admin) | Yes |
+| `/api/workassignment/update` | PUT | Update work assignment (Admin) | Yes |
+| `/api/workassignment/delete` | DELETE | Delete work assignment (Admin) | Yes |
+| `/api/data/workassignments` | GET | Get all work assignments for data filtering (Physician/Admin) | Yes |
+
+### Schedule Endpoints
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/schedule/create` | POST | Create new schedule | Yes |
+
+### Data Filtering Endpoint
+| Endpoint | Method | Description | Auth Required |
+|----------|--------|-------------|---------------|
+| `/api/filter` | GET | Filter data from any table by column/value | Yes |
 
 ## Environment Variables
 
