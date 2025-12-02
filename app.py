@@ -287,12 +287,15 @@ def delete_appointment(appointment_id):
             if not existing_appointment:
                 return jsonify({'success': False, 'error': 'Appointment not found or unauthorized'}), 404
             
-            # Delete the appointment for patient
-            delete_query = """
-                DELETE FROM Appointment 
-                WHERE AppointmentID = %s AND PatientID = %s
-            """
-            execute_update(delete_query, (appointment_id, current_user.reference_id))
+            # Delete dependent billing records first to satisfy FK, then the appointment
+            execute_update(
+                "DELETE FROM Billing WHERE AppointmentID = %s AND PatientID = %s",
+                (appointment_id, current_user.reference_id),
+            )
+            execute_update(
+                "DELETE FROM Appointment WHERE AppointmentID = %s AND PatientID = %s",
+                (appointment_id, current_user.reference_id),
+            )
         
         else:  # physician
             # Verify the appointment belongs to the current physician
@@ -305,12 +308,15 @@ def delete_appointment(appointment_id):
             if not existing_appointment:
                 return jsonify({'success': False, 'error': 'Appointment not found or unauthorized'}), 404
             
-            # Delete the appointment for physician (no date restrictions)
-            delete_query = """
-                DELETE FROM Appointment 
-                WHERE AppointmentID = %s AND PhysicianID = %s
-            """
-            execute_update(delete_query, (appointment_id, current_user.reference_id))
+            # Delete dependent billing records first, then the appointment
+            execute_update(
+                "DELETE FROM Billing WHERE AppointmentID = %s",
+                (appointment_id,),
+            )
+            execute_update(
+                "DELETE FROM Appointment WHERE AppointmentID = %s AND PhysicianID = %s",
+                (appointment_id, current_user.reference_id),
+            )
         
         return jsonify({'success': True, 'message': 'Appointment cancelled successfully'}), 200
         
