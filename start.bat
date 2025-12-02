@@ -6,12 +6,6 @@ echo Healthcare Management System
 echo ==================================
 echo.
 
-REM Check if virtual environment exists
-if not exist ".venv" (
-    echo Error: Virtual environment not found. Please create one first.
-    pause
-    exit /b 1
-)
 
 REM Check if node_modules exists in frontend
 if not exist "frontend\node_modules" (
