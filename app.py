@@ -9,8 +9,6 @@ import os
 app = Flask(__name__, static_folder='frontend/dist', static_url_path='')
 
 # Configuration
-# Use environment variable if available, otherwise use a default for development
-# IMPORTANT: In production, always set a strong SECRET_KEY environment variable
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production-12345')
 
 # Enable CORS for React frontend (Vite dev server)

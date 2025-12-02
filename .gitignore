@@ -95,5 +95,3 @@ instance/
 frontend/dist/
 frontend/node_modules/
 react-frontend/
-
-config.py

@@ -15,8 +15,9 @@ A full-stack healthcare management application with patient and physician portal
 
 - **Frontend**: React (Vite)
 - **Backend**: Flask (Python)
-- **Database**: MySQL
+- **Database**: MySQL with role-based access control
 - **Authentication**: Flask-Login with session management
+- **Security**: Dynamic user switching, Principle of Least Privilege
 - **Styling**: Custom CSS with modern gradients
 
 ## Quick Start
@@ -51,6 +52,7 @@ Visit: **http://localhost:5000**
 ## Documentation
 
 - 📖 **[QUICK_START.md](QUICK_START.md)** - Get started in 3 steps
+- 🔒 **[SECURITY_IMPLEMENTATION.md](SECURITY_IMPLEMENTATION.md)** - Role-based database security setup
 - 🔧 **[INTEGRATION_SUMMARY.md](INTEGRATION_SUMMARY.md)** - Complete feature overview
 - 🔐 **[AUTH_INTEGRATION_GUIDE.md](AUTH_INTEGRATION_GUIDE.md)** - Authentication system details
 - 🌐 **[FRONTEND_INTEGRATION.md](FRONTEND_INTEGRATION.md)** - Frontend setup guide
@@ -60,8 +62,9 @@ Visit: **http://localhost:5000**
 
 - Python 3.x
 - Node.js and npm
-- MySQL database
+- MySQL 5.7+ or 8.0+
 - pip (Python package manager)
+- MySQL root access (for creating role-based users)
 
 ## Installation
 
@@ -77,18 +80,55 @@ npm install
 ```
 
 ### 3. Setup Database
+
+**Step 3.1**: Create database and tables
 ```bash
-mysql -u root -p healthsystem < COMMANDS.sql
+mysql -u root -p HealthSystem < COMMANDS.sql
 ```
 
+**Step 3.2**: Create role-based MySQL users
+```sql
+-- Connect as root
+mysql -u root -p
+
+-- Create app users with different privilege levels
+CREATE USER 'app_patient'@'localhost' IDENTIFIED BY 'P@t1ent$ecur3P@ss2024!';
+CREATE USER 'app_physician'@'localhost' IDENTIFIED BY 'Phy$1c1@nS3cur3P@ss2024!';
+CREATE USER 'app_admin'@'localhost' IDENTIFIED BY 'Adm1n$ecur3P@ss2024!';
+
+-- Grant appropriate permissions (see SECURITY_IMPLEMENTATION.md for details)
+GRANT SELECT ON HealthSystem.* TO 'app_patient'@'localhost';
+GRANT ALL PRIVILEGES ON HealthSystem.* TO 'app_admin'@'localhost';
+
+FLUSH PRIVILEGES;
+```
+
+See [SECURITY_IMPLEMENTATION.md](SECURITY_IMPLEMENTATION.md) for complete permission setup.
+
 ### 4. Configure Database
+
 Edit [config.py](config.py) with your MySQL credentials:
 ```python
-DB_CONFIG = {
+# Base database configuration
+DATABASE_CONFIG = {
     'host': 'localhost',
-    'user': 'root',
-    'password': 'yourpassword',
-    'database': 'healthsystem'
+    'database': 'HealthSystem',
+}
+
+# Role-based credentials (Principle of Least Privilege)
+DB_CREDENTIALS = {
+    'patient': {
+        'user': 'app_patient',
+        'password': 'P@t1ent$ecur3P@ss2024!'  # Change this
+    },
+    'physician': {
+        'user': 'app_physician',
+        'password': 'Phy$1c1@nS3cur3P@ss2024!'  # Change this
+    },
+    'admin': {
+        'user': 'app_admin',
+        'password': 'Adm1n$ecur3P@ss2024!'  # Change this
+    }
 }
 ```
 
@@ -109,14 +149,15 @@ DB_CONFIG = {
 ## Project Structure
 
 ```
-priceless-galileo/
+healthcare-management/
 ├── app.py                         # Flask application entry point
 ├── auth.py                        # Authentication routes
 ├── models.py                      # Database models
-├── db.py                          # Database connection
-├── config.py                      # Configuration
+├── db.py                          # Database connection (role-based)
+├── config.py                      # Configuration (role credentials)
 ├── requirements.txt               # Python dependencies
 ├── COMMANDS.sql                   # Database schema
+├── SECURITY_IMPLEMENTATION.md     # Security setup guide
 ├── frontend/
 │   ├── src/
 │   │   ├── components/           # React components
@@ -128,6 +169,20 @@ priceless-galileo/
 │   └── vite.config.js            # Vite configuration
 └── docs/                         # Documentation files
 ```
+
+### Core Files
+
+**[db.py](db.py)** - Database connection manager with dynamic user switching
+- `get_db(user_role)`: Automatically switches credentials based on user's role
+- `execute_query()`, `execute_one()`, `execute_update()`: Safe query execution
+- `call_procedure()`: Stored procedure support
+- Implements defense-in-depth by enforcing DB-level permissions
+
+**[config.py](config.py)** - Security-enhanced configuration
+- `DATABASE_CONFIG`: Base connection settings
+- `DB_CREDENTIALS`: Separate credentials for patient/physician/admin roles
+- `get_db_config(user_role)`: Returns appropriate config per role
+- Implements Principle of Least Privilege at database layer
 
 ## API Endpoints
 
@@ -154,13 +209,31 @@ Generate a secure key:
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-## Security Notes
+## Security Features
 
-- Passwords are hashed using Werkzeug security
+### Application-Level Security
+- Passwords hashed using Werkzeug security (bcrypt-compatible)
 - Session-based authentication with HTTP-only cookies
 - CORS configured for development
-- Role-based access control
+- Role-based access control in Flask routes
+
+### Database-Level Security (Defense-in-Depth)
+- **Dynamic User Switching**: [db.py](db.py) automatically uses appropriate MySQL credentials
+  - Patient sessions → `app_patient` DB user (limited SELECT/INSERT)
+  - Physician sessions → `app_physician` DB user (medical records access)
+  - Admin sessions → `app_admin` DB user (full privileges)
+- **Principle of Least Privilege**: Each role has minimum required permissions
+- **SQL Injection Protection**: Even if app is compromised, database enforces access control
+- **Audit Trail Ready**: Different DB users enable connection-level logging
+
+### Best Practices
 - **Always set a strong SECRET_KEY in production**
+- Change default passwords in [config.py](config.py)
+- Use SSL/TLS for MySQL connections in production
+- Regularly review MySQL user permissions
+- Monitor database access logs
+
+See [SECURITY_IMPLEMENTATION.md](SECURITY_IMPLEMENTATION.md) for complete security setup.
 
 ## Development
 
@@ -189,7 +262,11 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions to common is
 Quick fixes:
 - **Login issues**: Restart Flask server
 - **Build errors**: Run `npm install` in frontend folder
-- **Database errors**: Check [config.py](config.py) credentials
+- **Database connection errors**:
+  - Verify [config.py](config.py) credentials match created MySQL users
+  - Test: `mysql -u app_admin -p HealthSystem`
+  - Ensure all three users (`app_patient`, `app_physician`, `app_admin`) are created
+- **Permission errors**: Check MySQL GRANT statements (see [SECURITY_IMPLEMENTATION.md](SECURITY_IMPLEMENTATION.md))
 - **Port conflicts**: Kill processes on ports 5000/3000
 
 ## License
